@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="utf-8">
+  <title>Rose Est&eacute;tica - Sistema de Comandas &amp; Comiss&otilde;es</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rose Est&eacute;tica">
+  <meta name="theme-color" content="#6c3483">
+  <meta name="msapplication-navbutton-color" content="#6c3483">
+  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --primary: #8e44ad;
+      --primary-dark: #6c3483;
+      --primary-light: #f4ecf7;
+      --secondary: #e67e22;
+      --secondary-dark: #d35400;
+      --success: #27ae60;
+      --danger: #e74c3c;
+      --dark: #2c3e50;
+      --gray-light: #f8f9fa;
+      --gray-border: #e2e8f0;
+      --gray-text: #64748b;
+      --radius: 10px;
+      --shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    body { background-color: #f1f5f9; color: var(--dark); padding-bottom: 40px; }
+
+    /* Top Bar */
+    .header {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+    .header .badge {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    /* Container */
+    .container { max-width: 900px; margin: 18px auto; padding: 0 16px; }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+    .tab-btn {
+      flex: 1;
+      min-width: 130px;
+      background: #fff;
+      border: 1px solid var(--gray-border);
+      padding: 11px 14px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--gray-text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary);
+      box-shadow: 0 4px 10px rgba(142, 68, 173, 0.25);
+    }
+
+    /* Cards */
+    .card {
+      background: #fff;
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--gray-border);
+      margin-bottom: 16px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* Form Elements */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 12px; }
+    label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; color: var(--dark); }
+    input, select, textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--gray-border);
+      border-radius: 6px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus { border-color: var(--primary); }
+
+    /* Buttons */
+    .btn {
+      padding: 12px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .btn-block { width: 100%; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-dark); }
+    .btn-secondary { background: var(--secondary); color: #fff; }
+    .btn-secondary:hover { background: var(--secondary-dark); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #219653; }
+    .btn-outline { background: #fff; border: 1px solid var(--gray-border); color: var(--dark); }
+    .btn-outline:hover { background: var(--gray-light); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    /* Agenda Pills */
+    .agenda-box {
+      background: #fdf2e9;
+      border: 1px solid #f5cba7;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 14px;
+    }
+    .agenda-title { font-size: 13px; font-weight: 700; color: #b9770e; margin-bottom: 8px; }
+    .agenda-items { display: flex; flex-wrap: wrap; gap: 6px; }
+    .agenda-pill {
+      background: #fff;
+      border: 1px solid #eb984e;
+      padding: 6px 10px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      color: #a04000;
+      transition: 0.2s;
+    }
+    .agenda-pill:hover { background: #e67e22; color: #fff; }
+
+    /* Itens da Comanda Table */
+    .tabela-itens { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    .tabela-itens th, .tabela-itens td { padding: 9px 10px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--gray-border); }
+    .tabela-itens th { background: var(--gray-light); font-weight: 600; color: var(--gray-text); }
+    .tabela-itens .total-row td { font-size: 15px; font-weight: 700; color: var(--primary-dark); border-top: 2px solid var(--gray-border); }
+
+    /* Comandas Abertas Cards */
+    .aberta-card {
+      background: #fffdfa;
+      border: 1px solid #f9e79f;
+      border-radius: 8px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+    .aberta-card:hover { border-color: var(--secondary); transform: translateY(-1px); }
+    .aberta-info h4 { font-size: 15px; color: var(--dark); margin-bottom: 4px; }
+    .aberta-info p { font-size: 13px; color: var(--gray-text); }
+    .aberta-total { text-align: right; font-size: 16px; font-weight: 700; color: var(--secondary-dark); }
+
+    /* Extrato Cards */
+    .resumo-kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 16px; }
+    .kpi-card { background: #fff; border: 1px solid var(--gray-border); border-radius: 8px; padding: 12px; text-align: center; }
+    .kpi-title { font-size: 11px; font-weight: 700; color: var(--gray-text); margin-bottom: 4px; letter-spacing: 0.5px; }
+    .kpi-value { font-size: 18px; font-weight: 700; color: var(--primary-dark); }
+    .kpi-value.verde { color: var(--success); }
+    .kpi-value.laranja { color: var(--secondary-dark); }
+    .kpi-value.azul { color: #2980b9; }
+
+    /* Caixa Troco Box */
+    .troco-box {
+      background: #eafaf1;
+      border: 1px solid #a9dfbf;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 10px;
+    }
+
+    /* Alerts */
+    .alert { padding: 12px 14px; border-radius: 6px; font-size: 14px; font-weight: 600; margin-bottom: 12px; display: none; }
+    .alert-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    .alert-error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+    /* PRINT LAYOUT (EPSON TM-T20 - 80mm / 72mm printable) */
+    @page { size: 80mm auto; margin: 0; }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; margin: 0; }
+      .no-print { display: none !important; }
+      .cupom-print { display: block !important; width: 72mm; margin: 0 auto; padding: 2mm; font-family: 'Courier Prime', Courier, monospace; font-size: 12px; line-height: 1.25; }
+    }
+    .cupom-print { display: none; }
+    .cupom-header { text-align: center; font-weight: bold; margin-bottom: 6px; font-size: 14px; }
+    .cupom-div { border-top: 1px dashed #000; margin: 5px 0; }
+    .cupom-row { display: flex; justify-content: space-between; margin: 3px 0; font-size: 12px; }
+    .cupom-destaque { font-weight: bold; font-size: 13px; }
+
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    .card {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+    .tabela-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      margin-bottom: 12px;
+    }
+
+    /* Responsividade Mobile para Telas Estreitas */
+    @media (max-width: 650px) {
+      .header { padding: 10px 12px; }
+      .header h1 { font-size: 16px; }
+      .subtitulo-header { display: none; }
+      .container { padding: 8px 10px; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 8px; }
+      .nav-tabs { gap: 4px; margin-bottom: 12px; }
+      .tab-btn { padding: 8px 6px; font-size: 12px; white-space: nowrap; flex: 1 1 auto; text-align: center; }
+      .resumo-kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
+      .kpi-card { padding: 10px 8px; }
+      .kpi-title { font-size: 10px; }
+      .kpi-value { font-size: 16px; }
+      .btn { padding: 10px 12px; font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="header no-print">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <img src="data:image/jpeg;base64,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" alt="Logo Rose Estetica" style="height: 42px; width: auto; border-radius: 6px; background: #fff; padding: 2px; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">
+      <div>
+        <h1 style="font-size: 18px; line-height: 1.2;">Rose Est&eacute;tica</h1>
+        <span class="subtitulo-header" style="font-size: 11px; opacity: 0.9;">Est&eacute;tica e Bem Estar</span>
+      </div>
+    </div>
+    <div style="display: flex; gap: 6px; align-items: center;">
+      <span class="badge" id="lblSemanaTopo" style="padding: 4px 8px; font-size: 12px;">Ref: S42</span>
+      <span class="badge" id="badgeModo" style="background: rgba(255,255,255,0.2); cursor: pointer; padding: 4px 8px; font-size: 12px;" onclick="clicarAlternarModo()">&#127970; Balc&atilde;o</span>
+      <button type="button" id="btnAlternarModo" class="btn" style="background: rgba(255,255,255,0.25); color: #fff; padding: 4px 10px; font-size: 11px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;" onclick="clicarAlternarModo()">&#128273; PIN</button>
+    </div>
+  </div>
+
+  <div class="container no-print">
+
+    <!-- Tabs Navigation (Descricoes Simplificadas e Compactas para Celular) -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="mudarAba('comanda')">&#128221; Comanda</button>
+      <button class="tab-btn" onclick="mudarAba('abertas')">&#9203; Abertas (<span id="cntAbertas">0</span>)</button>
+      <button class="tab-btn" onclick="mudarAba('extrato')">&#128202; Comiss&otilde;es</button>
+      <button class="tab-btn" onclick="mudarAba('conferencia')">&#128179; Caixa</button>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alertGlobal" class="alert"></div>
+
+    <!-- ABA 1: LANCAMENTO DE COMANDA -->
+    <div id="aba-comanda">
+      
+      <!-- Agendamentos Google Calendar de Hoje -->
+      <div id="boxAgenda" class="agenda-box" style="display: none;">
+        <div class="agenda-title">&#128197; Agendamentos de Hoje (Clique para preencher a comanda):</div>
+        <div id="listaAgenda" class="agenda-items"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <span>Identifica&ccedil;&atilde;o da Comanda</span>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+            <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 10px;" onclick="sincronizarAgendaGoogle()">&#128197; Google Agenda</button>
+            <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;" onclick="limparTudoParaNovaComanda()">&#10024; Nova Comanda</button>
+          </div>
+        </div>
+
+        <div class="grid-3">
+          <div class="form-group">
+            <label>N&ordm; Comanda:</label>
+            <input type="number" id="numComanda" placeholder="Ex: 4575" oninput="verificarMudancaNumComanda()">
+          </div>
+          <div class="form-group">
+            <label>Data:</label>
+            <input type="date" id="dataAtendimento">
+          </div>
+          <div class="form-group">
+            <label>Nome da Cliente:</label>
+            <input type="text" id="cliente" placeholder="Nome da cliente">
+          </div>
+        </div>
+      </div>
+
+      <!-- Inclusao de Servico/Profissional -->
+      <div class="card">
+        <div class="card-title">Adicionar Procedimento / Profissional</div>
+        
+        <div class="grid-3">
+          <div class="form-group">
+            <label>Profissional:</label>
+            <select id="selProfissional">
+              <option value="Paula">Paula</option>
+              <option value="Taty">Taty</option>
+              <option value="Fabiana">Fabiana</option>
+              <option value="Mariana">Mariana</option>
+              <option value="Rose">Rose</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Servi&ccedil;o / Descri&ccedil;&atilde;o:</label>
+            <input type="text" id="descricaoServico" list="listaServicosSugeridos" placeholder="Ex: Manicure, Cabelo...">
+            <datalist id="listaServicosSugeridos">
+              <option value="Manicure"></option>
+              <option value="Pedicure"></option>
+              <option value="Escova"></option>
+              <option value="Corte"></option>
+              <option value="Colora&ccedil;&atilde;o"></option>
+              <option value="Massagem"></option>
+              <option value="Limpeza de Pele"></option>
+              <option value="Depila&ccedil;&atilde;o"></option>
+              <option value="Sobrancelha"></option>
+            </datalist>
+          </div>
+          <div class="form-group">
+            <label>Valor R$:</label>
+            <input type="number" step="0.01" id="valorItem" placeholder="0.00">
+          </div>
+        </div>
+
+        <button id="btnAddItem" class="btn btn-secondary btn-block" onclick="gravarItem(false)">
+          &#10133; Adicionar Item
+        </button>
+      </div>
+
+      <!-- Itens Adicionados na Comanda Atual -->
+      <div class="card" id="cardItensComanda" style="display: none;">
+        <div class="card-title">Servi&ccedil;os Lan&ccedil;ados nesta Comanda</div>
+        <table class="tabela-itens">
+          <thead>
+            <tr>
+              <th>Profissional</th>
+              <th>Servi&ccedil;o</th>
+              <th style="text-align: right;">Valor R$</th>
+            </tr>
+          </thead>
+          <tbody id="corpoTabelaItens"></tbody>
+          <tfoot>
+            <tr class="total-row">
+              <td colspan="2">TOTAL DA COMANDA</td>
+              <td style="text-align: right;" id="lblTotalComanda">R$ 0,00</td>
+            </tr>
+          </tfoot>
+        </table>
+
+        <!-- Bloco de Finalizacao e Pagamento com Suporte a Multiplos Meios e Troco Integrado -->
+        <div style="margin-top: 18px; padding: 16px; background: #fdfefe; border: 1px solid var(--gray-border); border-radius: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px;">
+            <strong style="color: var(--primary); font-size: 14px;">&#128179; Forma de Pagamento &amp; Acerto</strong>
+            <span style="font-size: 12px; color: var(--gray-text);">Aceita pagamento total ou misto (dividido)</span>
+          </div>
+
+          <!-- Botoes de Preenchimento Rapido 100% (Harmonioso em Grid 2x2) -->
+          <div style="margin-bottom: 12px;">
+            <label style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--gray-text); margin-bottom: 6px; display: block;">
+              Preenchimento R&aacute;pido (100% do total):
+            </label>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+              <button type="button" class="btn btn-outline" style="padding: 9px 8px; font-size: 13px;" onclick="preencherPgRapido('dinheiro')">&#128181; Dinheiro</button>
+              <button type="button" class="btn btn-outline" style="padding: 9px 8px; font-size: 13px;" onclick="preencherPgRapido('pix')">&#128241; PIX</button>
+              <button type="button" class="btn btn-outline" style="padding: 9px 8px; font-size: 13px;" onclick="preencherPgRapido('debito')">&#128179; D&eacute;bito</button>
+              <button type="button" class="btn btn-outline" style="padding: 9px 8px; font-size: 13px;" onclick="preencherPgRapido('credito')">&#128179; Cr&eacute;dito</button>
+            </div>
+          </div>
+
+          <!-- Grid dos 4 Meios de Pagamento (Harmonioso em Grid 2x2) -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12px;">&#128181; Dinheiro (R$):</label>
+              <input type="text" inputmode="decimal" id="pgValorDinheiro" placeholder="0,00" onfocus="this.select()" oninput="aoMudarValoresPagamento()" onblur="formatarMoedaBlur(this)" style="font-weight: bold; color: var(--success);">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12px;">&#128241; PIX (R$):</label>
+              <input type="text" inputmode="decimal" id="pgValorPix" placeholder="0,00" onfocus="this.select()" oninput="aoMudarValoresPagamento()" onblur="formatarMoedaBlur(this)" style="font-weight: bold; color: var(--primary);">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12px;">&#128179; Cart&atilde;o D&eacute;bito (R$):</label>
+              <input type="text" inputmode="decimal" id="pgValorDebito" placeholder="0,00" onfocus="this.select()" oninput="aoMudarValoresPagamento()" onblur="formatarMoedaBlur(this)" style="font-weight: bold;">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label style="font-size: 12px;">&#128179; Cart&atilde;o Cr&eacute;dito (R$):</label>
+              <input type="text" inputmode="decimal" id="pgValorCredito" placeholder="0,00" onfocus="this.select()" oninput="aoMudarValoresPagamento()" onblur="formatarMoedaBlur(this)" style="font-weight: bold;">
+            </div>
+          </div>
+
+          <!-- Destaque Automatico do Troco -->
+          <div id="boxTrocoCalculado" style="display: flex; align-items: center; justify-content: space-between; background: #eafaf1; border: 1px solid #a3e4d7; border-radius: 6px; padding: 10px 16px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">&#128181;</span>
+              <span style="font-size: 13px; font-weight: 600; color: #117a65;">Troco:</span>
+            </div>
+            <div id="lblValorTrocoDevolver" style="font-size: 18px; font-weight: bold; color: #0e6251;">
+              R$ 0,00
+            </div>
+          </div>
+
+          <!-- Barra de Status e Validacao da Comanda (Total Pago Abaixo do Total Comanda) -->
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 8px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--gray-border); padding-bottom: 6px;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--dark);">Total da Comanda:</span>
+              <strong id="lblResumoTotalComanda" style="font-size: 16px; font-weight: 700; color: var(--dark);">R$ 0,00</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 600; color: var(--gray-text);">Total Pago:</span>
+              <strong id="lblResumoTotalInformado" style="font-size: 16px; font-weight: 700; color: var(--primary);">R$ 0,00</strong>
+            </div>
+            <div id="lblStatusPagamento" style="font-size: 12px; font-weight: bold; color: var(--warning-dark); text-align: right; padding-top: 2px;">
+              Selecione o pagamento
+            </div>
+          </div>
+
+          <!-- Botao Finalizar -->
+          <div>
+            <button id="btnFinalizar" class="btn btn-success btn-block" style="padding: 12px; font-size: 15px;" onclick="gravarItem(true)">
+              &#9989; Fechar Comanda
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botao Avulso de Impressao -->
+      <div style="text-align: right; margin-top: 10px;">
+        <button class="btn btn-outline" onclick="imprimirCupomAtual()">&#128424; &Uacute;ltimo Cupom</button>
+      </div>
+
+    </div>
+
+    <!-- ABA 2: COMANDAS EM ATENDIMENTO -->
+    <div id="aba-abertas" style="display: none;">
+      <div class="card">
+        <div class="card-title">
+          <span>Comandas em Aberto (Atendimento em Andamento)</span>
+          <span style="font-size: 13px; color: var(--gray-text);">Clique em uma comanda para continuar</span>
+        </div>
+        <div id="listaComandasAbertasCards"></div>
+      </div>
+    </div>
+
+    <!-- ABA 3: EXTRATO & COMISSOES -->
+    <div id="aba-extrato" style="display: none;">
+      
+      <!-- CARD DE AUTENTICACAO INDIVIDUAL COM PIN NO MODO BALCAO -->
+      <div id="cardLoginExtrato" class="card" style="display: none; max-width: 440px; margin: 30px auto; padding: 28px 24px; text-align: center; box-shadow: var(--shadow); border-radius: 12px; background: #ffffff;">
+        <div style="margin-bottom: 14px;">
+          <img src="data:image/jpeg;base64,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" alt="Logo Rose Estetica" style="height: 72px; width: auto; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.15);">
+        </div>
+        <h3 style="color: var(--primary); font-size: 18px; font-weight: 700; margin-bottom: 8px;">Extrato Individual de Comiss&otilde;es</h3>
+        <p style="font-size: 13px; color: var(--gray-text); margin-bottom: 20px; line-height: 1.4;">
+          Para garantir a privacidade dos seus ganhos no balc&atilde;o, selecione seu nome e digite seu PIN individual:
+        </p>
+
+        <div class="form-group" style="text-align: left; margin-bottom: 14px;">
+          <label for="loginExtratoProf" style="font-weight: 600; font-size: 13px;">Selecione seu nome:</label>
+          <select id="loginExtratoProf" style="padding: 10px 12px; font-size: 14px;">
+            <option value="Paula">Paula</option>
+            <option value="Taty">Taty</option>
+            <option value="Fabiana">Fabiana</option>
+            <option value="Mariana">Mariana</option>
+            <option value="Rose">Rose</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="text-align: left; margin-bottom: 18px;">
+          <label for="loginExtratoPin" style="font-weight: 600; font-size: 13px;">Digite seu PIN (4 d&iacute;gitos):</label>
+          <input type="password" id="loginExtratoPin" maxlength="6" placeholder="****" style="font-size: 22px; text-align: center; letter-spacing: 6px; padding: 10px; border: 2px solid var(--primary); border-radius: 8px;" onkeydown="if(event.key==='Enter') autenticarExtratoProfissional()">
+          <div id="erroLoginExtrato" style="display: none; color: var(--danger); font-size: 12px; font-weight: 600; margin-top: 8px; text-align: center;">PIN incorreto! Tente novamente.</div>
+        </div>
+
+        <button type="button" class="btn btn-primary btn-block" style="padding: 12px; font-size: 14px; font-weight: 700;" onclick="autenticarExtratoProfissional()">
+          &#128275; Ver Minhas Comiss&otilde;es
+        </button>
+
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--gray-border); font-size: 12px; color: var(--gray-text); text-align: center;">
+          &#128161; O Caixa e o Lan&ccedil;amento de Comandas continuam livres e compartilhados.
+        </div>
+      </div>
+
+      <!-- CONTEUDO DO EXTRATO (EXIBIDO QUANDO AUTENTICADO OU NO MODO GERENCIAL) -->
+      <div id="conteudoExtrato" style="display: none;">
+        <div class="card">
+          
+          <!-- Barra de Status da Profissional Logada -->
+          <div id="barraProfLogada" style="display: none; justify-content: space-between; align-items: center; background: #eafaf1; border: 1px solid #a9dfbf; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">&#128100;</span>
+              <span style="font-size: 13px; color: #1e8449; font-weight: 600;">
+                Extrato Individual: <strong id="txtProfLogada" style="font-size: 14px; color: #145a32;"></strong>
+              </span>
+            </div>
+            <button type="button" class="btn btn-outline" style="padding: 5px 12px; font-size: 12px; background: #fff; color: var(--dark);" onclick="sairExtratoProfissional()">
+              &#128274; Sair / Bloquear Extrato
+            </button>
+          </div>
+
+          <div class="card-title">Extrato Semanal de Atendimentos</div>
+          
+          <div class="grid-3">
+            <div class="form-group">
+              <label>Semana:</label>
+              <select id="extratoSemana" onchange="carregarExtrato()"><option value="S1">Semana S1</option><option value="S2">Semana S2</option><option value="S3">Semana S3</option><option value="S4">Semana S4</option><option value="S5">Semana S5</option><option value="S6">Semana S6</option><option value="S7">Semana S7</option><option value="S8">Semana S8</option><option value="S9">Semana S9</option><option value="S10">Semana S10</option><option value="S11">Semana S11</option><option value="S12">Semana S12</option><option value="S13">Semana S13</option><option value="S14">Semana S14</option><option value="S15">Semana S15</option><option value="S16">Semana S16</option><option value="S17">Semana S17</option><option value="S18">Semana S18</option><option value="S19">Semana S19</option><option value="S20">Semana S20</option><option value="S21">Semana S21</option><option value="S22">Semana S22</option><option value="S23">Semana S23</option><option value="S24">Semana S24</option><option value="S25">Semana S25</option><option value="S26">Semana S26</option><option value="S27">Semana S27</option><option value="S28">Semana S28</option><option value="S29">Semana S29</option><option value="S30">Semana S30</option><option value="S31">Semana S31</option><option value="S32">Semana S32</option><option value="S33">Semana S33</option><option value="S34">Semana S34</option><option value="S35">Semana S35</option><option value="S36">Semana S36</option><option value="S37">Semana S37</option><option value="S38">Semana S38</option><option value="S39">Semana S39</option><option value="S40">Semana S40</option><option value="S41">Semana S41</option><option value="S42" selected>Semana S42</option><option value="S43">Semana S43</option><option value="S44">Semana S44</option><option value="S45">Semana S45</option><option value="S46">Semana S46</option><option value="S47">Semana S47</option><option value="S48">Semana S48</option><option value="S49">Semana S49</option><option value="S50">Semana S50</option><option value="S51">Semana S51</option><option value="S52">Semana S52</option><option value="S53">Semana S53</option></select>
+            </div>
+            <div class="form-group">
+              <label>Profissional:</label>
+              <select id="extratoProfissional" onchange="carregarExtrato()">
+                <option value="TODAS">Todas as Profissionais</option>
+                <option value="Paula">Paula</option>
+                <option value="Taty">Taty</option>
+                <option value="Fabiana">Fabiana</option>
+                <option value="Mariana">Mariana</option>
+                <option value="Rose">Rose</option>
+              </select>
+            </div>
+            <div style="display: flex; align-items: flex-end; margin-bottom: 12px;">
+              <button class="btn btn-outline btn-block" onclick="carregarExtrato()">&#128269; Atualizar</button>
+            </div>
+          </div>
+
+          <div class="resumo-kpis">
+            <div class="kpi-card" id="cardKpiTotalFaturado" style="display: none;">
+              <div class="kpi-title">&#128176; TOTAL FATURADO (CL&Iacute;NICA)</div>
+              <div class="kpi-value" id="kpiTotalBruto">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">TOTAL COMISS&Otilde;ES</div>
+              <div class="kpi-value verde" id="kpiTotalComissao">R$ 0,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">RATEIO FAXINA</div>
+              <div class="kpi-value laranja" id="kpiFaxina">- R$ 30,00</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-title">L&Iacute;QUIDO A RECEBER</div>
+              <div class="kpi-value" id="kpiLiquido">R$ 0,00</div>
+            </div>
+          </div>
+
+          <!-- Painel de Acerto e Quitacao de Comissoes da Semana (Modo Gerencial) -->
+          <div id="painelQuitacaoComissoes" class="card" style="display: none; margin-bottom: 20px; border-left: 4px solid var(--primary); background: #fdfefe; padding: 16px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px;">
+              <div>
+                <strong style="color: var(--primary); font-size: 14px;">&#128176; Acerto &amp; Confirma&ccedil;&atilde;o de Pagamento das Comiss&otilde;es</strong>
+                <span style="font-size: 12px; color: var(--gray-text); display: block;">Consolidado semanal com controle de quita&ccedil;&atilde;o e envio de comprovante</span>
+              </div>
+              <span class="badge" style="background: #e8f8f5; color: #117a65; font-size: 11px; padding: 4px 8px; border: 1px solid #a3e4d7;">Exclusivo Gerencial</span>
+            </div>
+            <div style="overflow-x: auto;">
+              <table class="tabela-itens" style="margin-bottom: 0;">
+                <thead>
+                  <tr>
+                    <th>Profissional</th>
+                    <th style="text-align: center;">Atendimentos</th>
+                    <th style="text-align: right;">Comiss&otilde;es R$</th>
+                    <th style="text-align: right;">Rateio Faxina</th>
+                    <th style="text-align: right;">L&iacute;quido a Pagar</th>
+                    <th style="text-align: center;">Status Pgto</th>
+                    <th style="text-align: center;">A&ccedil;&atilde;o</th>
+                  </tr>
+                </thead>
+                <tbody id="corpoTabelaQuitacao"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="tabela-wrapper">
+            <table class="tabela-itens">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Comanda</th>
+                  <th>Cliente</th>
+                  <th>Profissional</th>
+                  <th>Servi&ccedil;o</th>
+                  <th>Pgto</th>
+                  <th style="text-align: right;">Comiss&atilde;o</th>
+                </tr>
+              </thead>
+              <tbody id="tabelaExtratoCorpo"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ABA 4: CONFERENCIA DE CAIXA & PAGAMENTOS -->
+    <div id="aba-conferencia" style="display: none;">
+      <div class="card">
+        <div class="card-title">
+          <span>Confer&ecirc;ncia &amp; Fechamento de Caixa</span>
+          <button class="btn btn-outline" style="font-size: 12px;" onclick="carregarConferencia()">&#128259; Recarregar</button>
+        </div>
+        <p style="font-size: 13px; color: var(--gray-text); margin-bottom: 14px;">
+          Reconcilia&ccedil;&atilde;o di&aacute;ria de todos os pagamentos (Dinheiro, PIX, Cart&otilde;es e Cheques). As marca&ccedil;&otilde;es s&atilde;o salvas na planilha.
+        </p>
+
+        <!-- Barra de Filtro de Data na Conferencia (Exclusivo Gerencial) -->
+        <div id="barraFiltroDataConf" style="display: none; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: #f8fafc; border: 1px solid var(--gray-border); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <label for="confFiltroData" style="font-weight: 600; font-size: 13px; color: var(--dark); margin: 0;">&#128197; Data do Caixa:</label>
+            <input type="date" id="confFiltroData" style="padding: 6px 10px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 13px;" onchange="aplicarFiltroDataConferencia()">
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('hoje')">Hoje</button>
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('ontem')">Ontem</button>
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('semana')">Toda a Semana</button>
+          </div>
+          <div id="lblStatusFiltroConf" style="font-size: 12px; font-weight: bold; color: var(--primary);">
+            Exibindo pagamentos de: Hoje
+          </div>
+        </div>
+
+        <!-- Barra Fixa do Caixa do Dia (Para Profissionais no Balcao - Sem alteracao de data) -->
+        <div id="barraInfoCaixaHoje" style="display: flex; justify-content: space-between; align-items: center; background: #f0fdf4; border: 1px solid #bbf7d0; padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">&#128197;</span>
+            <span style="font-size: 13px; font-weight: 600; color: #166534;">
+              Caixa do Dia: <strong id="lblDataCaixaHoje">Hoje</strong>
+            </span>
+          </div>
+          <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px;">Movimenta&ccedil;&atilde;o de Hoje</span>
+        </div>
+
+        <!-- Subtotais por Tipo de Pagamento -->
+        <div class="resumo-kpis" id="boxKpisPagamento">
+          <div class="kpi-card">
+            <div class="kpi-title">&#128181; DINHEIRO</div>
+            <div class="kpi-value verde" id="kpiPgDinheiro">R$ 0,00</div>
+            <small style="color: var(--gray-text);" id="lblSubTroco">Troco: R$ 0,00</small>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">&#128241; PIX</div>
+            <div class="kpi-value azul" id="kpiPgPix">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">&#128179; CART&Atilde;O D&Eacute;BITO</div>
+            <div class="kpi-value" id="kpiPgDebito">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">&#128179; CART&Atilde;O CR&Eacute;DITO</div>
+            <div class="kpi-value" id="kpiPgCredito">R$ 0,00</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-title">&#127974; TOTAL GERAL</div>
+            <div class="kpi-value" id="kpiPgTotal">R$ 0,00</div>
+          </div>
+        </div>
+
+        <!-- Painel de Acerto e Quitacao de Comissoes da Semana (Modo Gerencial) -->
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="tabela-itens">
+            <thead>
+              <tr>
+                <th id="thConfCaixa" style="width: 40px; text-align: center; display: none;">Conf.</th>
+                <th>Data</th>
+                <th>Comanda</th>
+                <th>Cliente</th>
+                <th>Profissional</th>
+                <th>Forma Pgto</th>
+                <th style="text-align: right;">Valor R$</th>
+                <th style="text-align: right;">Troco R$</th>
+              </tr>
+            </thead>
+            <tbody id="tabelaConferenciaCorpo"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  
+  <!-- MODAL DE IDENTIFICACAO POR PIN (GERENCIAL OU PROFISSIONAL) -->
+  <div id="modalPin" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; border-radius: 14px; padding: 24px; max-width: 320px; width: 90%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); text-align: center; font-family: 'Inter', sans-serif;">
+      <div style="font-size: 32px; margin-bottom: 8px;">&#128273;</div>
+      <h3 style="color: var(--primary); font-size: 18px; margin-bottom: 6px; font-weight: 700;">Identifica&ccedil;&atilde;o de Acesso</h3>
+      <p style="font-size: 13px; color: var(--gray-text); margin-bottom: 16px;">
+        Digite seu PIN de 4 d&iacute;gitos:
+      </p>
+      <input type="password" id="inputPinGerencial" maxlength="6" placeholder="****" style="width: 100%; font-size: 26px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 12px; outline: none; box-sizing: border-box;" onkeydown="if(event.key==='Enter') confirmarPinModal()">
+      <div id="erroPinModal" style="display: none; color: var(--danger); font-size: 12px; font-weight: bold; margin-bottom: 12px;">PIN n&atilde;o reconhecido! Tente novamente.</div>
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-outline" style="flex: 1; padding: 8px;" onclick="fecharModalPin()">Cancelar</button>
+        <button type="button" class="btn btn-primary" style="flex: 1; padding: 8px;" onclick="confirmarPinModal()">Entrar</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- CUPOM TERMICO (EPSON TM-T20 - 80mm) -->
+  <div id="cupomPrint" class="cupom-print">
+    <div class="cupom-header">ROSE ESTETICA</div>
+    <div style="text-align: center; font-size: 11px;">Comanda de Atendimento</div>
+    <div class="cupom-div"></div>
+    <div class="cupom-row"><span class="cupom-destaque">COMANDA: #<span id="p_num"></span></span><span id="p_data"></span></div>
+    <div>CLIENTE: <strong id="p_cliente"></strong></div>
+    <div class="cupom-div"></div>
+    <div id="p_itens"></div>
+    <div class="cupom-div"></div>
+    <div class="cupom-row cupom-destaque"><span>TOTAL:</span><span>R$ <span id="p_total"></span></span></div>
+    <div class="cupom-row" id="p_row_troco" style="display: none;"><span>TROCO:</span><span>R$ <span id="p_troco"></span></span></div>
+    <div class="cupom-row"><span>PAGAMENTO:</span><strong id="p_pg"></strong></div>
+    <div class="cupom-div"></div>
+    <div style="text-align: center; font-size: 10px; margin-top: 8px;">Obrigado pela prefer&ecirc;ncia!</div>
+  </div>
+
+  <script>
+    // === ADAPTADOR UNIVERSAL GOOGLE APPS SCRIPT API (GITHUB PAGES PWA) ===
+    const API_URL = 'https://script.google.com/macros/s/AKfycbybMnLiy17EoLjiCeAbBMZAnEHmFw7mBdsakYPdKKlfTvzOCBMhhqQnvmWK6QTxoyyc/exec';
+
+    // Registra o Service Worker para habilitar o botao "Instalar Aplicativo" no celular
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          console.log('[PWA] Service Worker registrado com sucesso:', reg.scope);
+        }).catch(err => {
+          console.log('[PWA] Falha ao registrar Service Worker:', err);
+        });
+      });
+    }
+
+    // Shim para rotear chamadas de google.script.run para fetch HTTP POST quando rodando fora do GAS
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+      function chamarApiAppsScript(metodo, args, successFn, failureFn) {
+        let payload = { acao: metodo };
+        if (metodo === 'getDadosIniciais') { }
+        else if (metodo === 'obterAgendamentosHoje') { payload.data = args[0]; }
+        else if (metodo === 'proximoNumeroComanda') { }
+        else if (metodo === 'salvarItemComanda') { payload.dados = args[0]; }
+        else if (metodo === 'fecharComandaCompleta') { payload.numComanda = args[0]; payload.formaPg = args[1]; payload.trocoVal = args[2]; }
+        else if (metodo === 'montarResumoComanda') { payload.numComanda = args[0]; }
+        else if (metodo === 'listarComandasAbertas') { }
+        else if (metodo === 'getExtratoSemanal') { payload.semana = args[0]; payload.profissionalFiltro = args[1]; payload.modoGerencial = args[2]; }
+        else if (metodo === 'alternarConferenciaCartao') { payload.idRegistro = args[0]; payload.conferido = args[1]; }
+        else if (metodo === 'confirmarPagamentoComissao') { payload.dados = args[0]; }
+        else if (metodo === 'cancelarPagamentoComissao') { payload.dados = args[0]; }
+
+        fetch(API_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload),
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Falha na comunicacao com o servidor: ' + response.statusText);
+          return response.json();
+        })
+        .then(data => {
+          if (data && data.status === 'erro' && failureFn) {
+            failureFn(new Error(data.mensagem || 'Erro retornado pela API'));
+          } else if (successFn) {
+            successFn(data);
+          }
+        })
+        .catch(err => {
+          console.error('[API Error]:', err);
+          if (failureFn) failureFn(err);
+        });
+      }
+
+      function makeRunner(successHandler, failureHandler) {
+        return new Proxy({}, {
+          get: function(target, propKey) {
+            if (propKey === 'withSuccessHandler') {
+              return function(sh) { return makeRunner(sh, failureHandler); };
+            }
+            if (propKey === 'withFailureHandler') {
+              return function(fh) { return makeRunner(successHandler, fh); };
+            }
+            return function(...args) {
+              return chamarApiAppsScript(propKey, args, successHandler, failureHandler);
+            };
+          }
+        });
+      }
+
+      window.google = {
+        script: {
+          run: makeRunner(null, null)
+        }
+      };
+      console.log('[PWA] Adaptador Google Apps Script inicializado em modo standalone HTTP API.');
+    }
+    // ======================================================================
+
+    let appState = {
+      profissionais: [
+        { nome: 'Paula', pin: '1234' },
+        { nome: 'Taty', pin: '2345' },
+        { nome: 'Fabiana', pin: '3456' },
+        { nome: 'Mariana', pin: '4567' },
+        { nome: 'Rose', pin: '1209' }
+      ],
+      formasPagamento: [],
+      semanaAtual: 'S42',
+      proximaComanda: 4570,
+      comandasAbertas: [],
+      agendamentosHoje: [],
+      comandaAtualItens: [],
+      ultimoCupom: null,
+      modoGerencial: false,
+      profissionalLogada: null
+    };
+
+    (function inicializarInterfaceImediata() {
+      try {
+        const d = new Date();
+        const ano = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        const dataHojeStr = ano + '-' + mes + '-' + dia;
+        
+        const elData = document.getElementById('dataAtendimento');
+        if (elData) elData.value = dataHojeStr;
+
+        const primJan = new Date(ano, 0, 1);
+        const dias = Math.floor((d - primJan) / (24 * 60 * 60 * 1000));
+        const numSem = Math.ceil((dias + primJan.getDay() + 1) / 7);
+        appState.semanaAtual = 'S' + (numSem > 53 ? 53 : numSem);
+
+        const lblSem = document.getElementById('lblSemanaTopo');
+        if (lblSem) lblSem.innerText = 'Ref: ' + appState.semanaAtual;
+
+        const selSem = document.getElementById('extratoSemana');
+        if (selSem) selSem.value = appState.semanaAtual;
+
+        ativarModoGerencial(false);
+      } catch (eInit) {
+        console.error('Aviso inicializacao local:', eInit);
+      }
+    })();
+
+    function sincronizarComPlanilha() {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        console.log('Ambiente local ou google.script indisponivel no momento.');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(inicializarApp)
+        .withFailureHandler(tratarErro)
+        .getDadosIniciais();
+
+      try {
+        google.script.run
+          .withSuccessHandler(function(agendamentos) {
+            if (agendamentos && agendamentos.length > 0) {
+              appState.agendamentosHoje = agendamentos;
+              renderizarAgendaHoje();
+            }
+          })
+          .obterAgendamentosHoje();
+      } catch (eCal) {
+        console.log('Aviso Calendar sync:', eCal);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', sincronizarComPlanilha);
+    } else {
+      sincronizarComPlanilha();
+    }
+
+    function inicializarApp(data) {
+      try {
+        if (!data) data = {};
+        if (data.status === 'erro' && data.erro) {
+          mostrarAlerta('Aviso da planilha: ' + data.erro, false);
+        }
+
+        if (data.profissionais && data.profissionais.length > 0) {
+          appState.profissionais = data.profissionais;
+        }
+        if (data.semanaAtual) {
+          appState.semanaAtual = data.semanaAtual;
+          const lblSem = document.getElementById('lblSemanaTopo');
+          if (lblSem) lblSem.innerText = 'Ref: ' + appState.semanaAtual;
+          const selSem = document.getElementById('extratoSemana');
+          if (selSem) selSem.value = appState.semanaAtual;
+        }
+        if (data.proximaComanda) {
+          appState.proximaComanda = data.proximaComanda;
+          const inpNum = document.getElementById('numComanda');
+          if (inpNum) inpNum.value = appState.proximaComanda;
+        }
+        if (data.comandasAbertas) {
+          appState.comandasAbertas = data.comandasAbertas;
+          renderizarComandasAbertas();
+        }
+
+        popularSelectLoginProf();
+
+        const selProf = document.getElementById('selProfissional');
+        if (selProf && appState.profissionais) {
+          selProf.innerHTML = '';
+          appState.profissionais.forEach(function(p) {
+            let opt = document.createElement('option');
+            opt.value = p.nome; opt.text = p.nome;
+            selProf.add(opt);
+          });
+        }
+        popularSelectExtratoProf(appState.modoGerencial);
+
+        const lblSemana = document.getElementById('lblSemanaTopo');
+        if (lblSemana) {
+          lblSemana.title = 'Conectado com sucesso a planilha Google Sheets';
+        }
+      } catch (errInit) {
+        console.error('Erro ao sincronizar dados:', errInit);
+      }
+    }
+
+    function sincronizarAgendaGoogle() {
+      const dtEl = document.getElementById('dataAtendimento');
+      const dataRef = dtEl && dtEl.value ? dtEl.value : '';
+      mostrarAlerta('Buscando agendamentos na Google Agenda...', true);
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        mostrarAlerta('Ambiente local ou google.script indisponivel.', false);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(agendamentos) {
+          appState.agendamentosHoje = agendamentos || [];
+          renderizarAgendaHoje();
+          if (!agendamentos || agendamentos.length === 0) {
+            mostrarAlerta('Nenhum agendamento encontrado para esta data na Google Agenda.', true);
+          } else {
+            mostrarAlerta('&#9989; ' + agendamentos.length + ' agendamento(s) carregado(s) da Google Agenda!', true);
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error('Erro Calendar:', err);
+          mostrarAlerta('Aviso Google Agenda: Verifique autorizacao de acesso.', false);
+        })
+        .obterAgendamentosHoje(dataRef);
+    }
+
+    function renderizarAgendaHoje() {
+      const box = document.getElementById('boxAgenda');
+      const container = document.getElementById('listaAgenda');
+      container.innerHTML = '';
+
+      if (!appState.agendamentosHoje || appState.agendamentosHoje.length === 0) {
+        box.style.display = 'none';
+        return;
+      }
+
+      box.style.display = 'block';
+      appState.agendamentosHoje.forEach(ev => {
+        let pill = document.createElement('div');
+        pill.className = 'agenda-pill';
+
+        let labelProf = ev.profissional ? (' [' + ev.profissional + ']') : '';
+        pill.innerText = ev.horario + ' - ' + ev.titulo + labelProf;
+
+        // Destaque visual caso pertenca a profissional ativa no modo balcao
+        if (appState.usuarioAtual && appState.usuarioAtual.perfil && ev.profissional && appState.usuarioAtual.perfil.toLowerCase() === ev.profissional.toLowerCase()) {
+          pill.style.borderColor = 'var(--primary)';
+          pill.style.background = '#f5eef8';
+          pill.style.color = 'var(--primary-dark)';
+          pill.style.fontWeight = 'bold';
+        }
+
+        pill.onclick = () => {
+          let cli = ev.titulo || '';
+          let servicoDetectado = '';
+
+          // Deteccao automatica de procedimento no texto do agendamento
+          const textoCompleto = (cli + ' ' + (ev.descricao || '')).toLowerCase();
+          if (textoCompleto.indexOf('skinbooster') !== -1) {
+            servicoDetectado = 'Skinbooster';
+          } else if (textoCompleto.indexOf('peim') !== -1) {
+            servicoDetectado = 'PEIM';
+          } else if (textoCompleto.indexOf('crio') !== -1) {
+            servicoDetectado = 'Criofrequencia';
+          } else if (textoCompleto.indexOf('mao') !== -1 || textoCompleto.indexOf('m\u00e3o') !== -1 || textoCompleto.indexOf('manicure') !== -1) {
+            servicoDetectado = 'Manicure';
+          } else if (textoCompleto.indexOf('pe') !== -1 || textoCompleto.indexOf('p\u00e9') !== -1 || textoCompleto.indexOf('pedicure') !== -1) {
+            servicoDetectado = 'Pedicure';
+          } else if (textoCompleto.indexOf('massagem') !== -1) {
+            servicoDetectado = 'Massagem';
+          } else if (textoCompleto.indexOf('limpeza') !== -1) {
+            servicoDetectado = 'Limpeza de Pele';
+          } else if (textoCompleto.indexOf('sobrancelha') !== -1) {
+            servicoDetectado = 'Sobrancelha';
+          }
+
+          // Limpa termos de procedimento do nome do cliente
+          cli = cli.replace(/skinbooster|peim|criofrequencia|crio|manicure|pedicure|m\u00e3o|mao|p\u00e9|pe/gi, '');
+          cli = cli.replace(/[-/(),]/g, ' ').replace(/\s+/g, ' ').trim();
+
+          // Define profissional correspondente
+          if (ev.profissional) {
+            const selProf = document.getElementById('selProfissional');
+            if (selProf) selProf.value = ev.profissional;
+          }
+
+          // Preenche cliente e servico
+          document.getElementById('cliente').value = cli || ev.titulo;
+          if (servicoDetectado) {
+            document.getElementById('descricaoServico').value = servicoDetectado;
+          }
+
+          document.getElementById('valorItem').focus();
+          mostrarAlerta('&#9989; Agendamento carregado: ' + (cli || ev.titulo) + (ev.profissional ? (' (' + ev.profissional + ')') : ''), true);
+        };
+        container.appendChild(pill);
+      });
+    }
+
+    function renderizarComandasAbertas() {
+      const cnt = document.getElementById('cntAbertas');
+      const container = document.getElementById('listaComandasAbertasCards');
+      container.innerHTML = '';
+
+      const abertas = appState.comandasAbertas || [];
+      cnt.innerText = abertas.length;
+
+      if (abertas.length === 0) {
+        container.innerHTML = '<p style="color: var(--gray-text); text-align: center; padding: 20px;">Nenhuma comanda aberta no momento.</p>';
+        return;
+      }
+
+      abertas.forEach(c => {
+        let card = document.createElement('div');
+        card.className = 'aberta-card';
+        let descServicos = c.itens.map(i => i.profissional + ' (' + i.servico + ')').join(', ');
+        card.innerHTML = `
+          <div class="aberta-info">
+            <h4>Comanda #${c.numComanda} - ${c.cliente}</h4>
+            <p>${descServicos}</p>
+          </div>
+          <div class="aberta-total">
+            R$ ${c.total.toFixed(2)}
+          </div>
+        `;
+        card.onclick = () => carregarComandaNaTela(c);
+        container.appendChild(card);
+      });
+    }
+
+    function carregarComandaNaTela(c) {
+      document.getElementById('numComanda').value = c.numComanda;
+      if (c.data) document.getElementById('dataAtendimento').value = c.data;
+      document.getElementById('cliente').value = c.cliente;
+
+      appState.comandaAtualItens = c.itens.map(it => ({
+        profissional: it.profissional,
+        descricao: it.servico,
+        valor: it.valor
+      }));
+
+      atualizarTabelaItensTela();
+      mudarAba('comanda');
+    }
+
+    function verificarMudancaNumComanda() {
+      const num = document.getElementById('numComanda').value.trim();
+      if (!num) {
+        appState.comandaAtualItens = [];
+        atualizarTabelaItensTela();
+        return;
+      }
+
+      const comandaExistente = (appState.comandasAbertas || []).find(c => String(c.numComanda) === String(num));
+      if (comandaExistente) {
+        if (!document.getElementById('cliente').value.trim()) {
+          document.getElementById('cliente').value = comandaExistente.cliente || '';
+        }
+        if (comandaExistente.data) {
+          document.getElementById('dataAtendimento').value = comandaExistente.data;
+        }
+        appState.comandaAtualItens = (comandaExistente.itens || []).map(it => ({
+          profissional: it.profissional,
+          descricao: it.servico,
+          valor: it.valor
+        }));
+      } else {
+        appState.comandaAtualItens = [];
+      }
+      atualizarTabelaItensTela();
+    }
+
+    function limparTudoParaNovaComanda() {
+      const numAtual = parseInt(document.getElementById('numComanda').value, 10) || 4570;
+      const proxSugerido = numAtual + 1;
+      limparFormularioComanda(proxSugerido);
+      mostrarAlerta('Pronto para nova comanda #' + proxSugerido, true);
+
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.withSuccessHandler(proxima => {
+          if (proxima) {
+            appState.proximaComanda = proxima;
+            document.getElementById('numComanda').value = proxima;
+          }
+        }).proximoNumeroComanda();
+      }
+    }
+
+    function atualizarTabelaItensTela() {
+      const card = document.getElementById('cardItensComanda');
+      const tbody = document.getElementById('corpoTabelaItens');
+      const lblTotal = document.getElementById('lblTotalComanda');
+
+      tbody.innerHTML = '';
+      if (!appState.comandaAtualItens || appState.comandaAtualItens.length === 0) {
+        card.style.display = 'none';
+        return;
+      }
+
+      card.style.display = 'block';
+      let total = 0;
+      appState.comandaAtualItens.forEach(it => {
+        let tr = document.createElement('tr');
+        let v = Number(it.valor) || 0;
+        total += v;
+        tr.innerHTML = `
+          <td><strong>${it.profissional}</strong></td>
+          <td>${it.descricao || 'Atendimento'}</td>
+          <td style="text-align: right;">R$ ${v.toFixed(2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      lblTotal.innerText = 'R$ ' + total.toFixed(2);
+      aoMudarValoresPagamento();
+    }
+
+    function formatarMoedaBlur(input) {
+      let val = parseValorPt(input.value);
+      if (val > 0) {
+        input.value = val.toFixed(2).replace('.', ',');
+      } else {
+        input.value = '';
+      }
+      if (input.id.indexOf('pgValor') !== -1) {
+        aoMudarValoresPagamento();
+      }
+    }
+
+    function parseValorPt(str) {
+      if (!str) return 0;
+      let s = String(str).replace('R$', '').replace(/\s+/g, '');
+      if (s.indexOf(',') !== -1) {
+        s = s.replace(/\./g, '').replace(',', '.');
+      }
+      return parseFloat(s) || 0;
+    }
+
+    function preencherPgRapido(tipo) {
+      const totalNum = obterTotalComandaAtual();
+      const txt = totalNum > 0 ? totalNum.toFixed(2).replace('.', ',') : '';
+      document.getElementById('pgValorDinheiro').value = (tipo === 'dinheiro') ? txt : '';
+      document.getElementById('pgValorPix').value = (tipo === 'pix') ? txt : '';
+      document.getElementById('pgValorDebito').value = (tipo === 'debito') ? txt : '';
+      document.getElementById('pgValorCredito').value = (tipo === 'credito') ? txt : '';
+      aoMudarValoresPagamento();
+    }
+
+    function aoMudarValoresPagamento() {
+      const totalNum = obterTotalComandaAtual();
+      const din = parseValorPt(document.getElementById('pgValorDinheiro').value);
+      const pix = parseValorPt(document.getElementById('pgValorPix').value);
+      const deb = parseValorPt(document.getElementById('pgValorDebito').value);
+      const cred = parseValorPt(document.getElementById('pgValorCredito').value);
+      const totalRecebido = din + pix + deb + cred;
+
+      document.getElementById('lblResumoTotalComanda').innerText = 'R$ ' + totalNum.toFixed(2).replace('.', ',');
+      document.getElementById('lblResumoTotalInformado').innerText = 'R$ ' + totalRecebido.toFixed(2).replace('.', ',');
+
+      const statusEl = document.getElementById('lblStatusPagamento');
+      const trocoEl = document.getElementById('lblValorTrocoDevolver');
+
+      if (totalNum <= 0) {
+        statusEl.innerText = 'Adicione servi\u00e7os \u00e0 comanda';
+        statusEl.style.color = 'var(--gray-text)';
+        trocoEl.innerText = 'R$ 0,00';
+        return;
+      }
+
+      const dif = Math.round((totalRecebido - totalNum) * 100) / 100;
+
+      if (totalRecebido <= 0) {
+        statusEl.innerText = 'Selecione ou digite o pagamento';
+        statusEl.style.color = 'var(--warning-dark)';
+        trocoEl.innerText = 'R$ 0,00';
+      } else if (dif < 0) {
+        const falta = Math.abs(dif);
+        statusEl.innerText = '\u26a0\ufe0f Falta R$ ' + falta.toFixed(2).replace('.', ',');
+        statusEl.style.color = 'var(--warning-dark)';
+        trocoEl.innerText = 'R$ 0,00';
+      } else if (dif === 0) {
+        statusEl.innerText = '\u2705 Pagamento completo (R$ ' + totalNum.toFixed(2).replace('.', ',') + ')';
+        statusEl.style.color = 'var(--success)';
+        trocoEl.innerText = 'R$ 0,00';
+      } else {
+        const troco = dif;
+        statusEl.innerText = '\u2705 Pagamento completo (Troco: R$ ' + troco.toFixed(2).replace('.', ',') + ')';
+        statusEl.style.color = 'var(--success)';
+        trocoEl.innerText = 'R$ ' + troco.toFixed(2).replace('.', ',');
+      }
+    }
+
+    function obterTotalComandaAtual() {
+      let soma = 0;
+      const numComanda = document.getElementById('numComanda').value.trim();
+      if (appState.comandasAbertas && appState.comandasAbertas.length > 0) {
+        appState.comandasAbertas.forEach(c => {
+          if (String(c.numComanda) === String(numComanda)) {
+            soma += (parseFloat(c.total) || 0);
+          }
+        });
+      }
+      return soma;
+    }
+
+    function gravarItem(finalizar) {
+      const numComanda = document.getElementById('numComanda').value.trim();
+      const data = document.getElementById('dataAtendimento').value;
+      const cliente = document.getElementById('cliente').value.trim();
+      const profissional = document.getElementById('selProfissional').value;
+      const descricao = document.getElementById('descricaoServico').value.trim() || 'Atendimento';
+      const valorNum = parseValorPt(document.getElementById('valorItem').value);
+
+      if (!numComanda || !cliente) {
+        mostrarAlerta('Informe o n&uacute;mero da comanda e o nome da cliente!', false);
+        return;
+      }
+
+      const totalComandaBase = obterTotalComandaAtual() + (valorNum > 0 ? valorNum : 0);
+
+      let formaPgStr = '';
+      let trocoVal = 0;
+
+      if (finalizar) {
+        if (totalComandaBase <= 0) {
+          mostrarAlerta('Adicione pelo menos um servi&ccedil;o antes de finalizar!', false);
+          return;
+        }
+
+        const din = parseValorPt(document.getElementById('pgValorDinheiro').value);
+        const pix = parseValorPt(document.getElementById('pgValorPix').value);
+        const deb = parseValorPt(document.getElementById('pgValorDebito').value);
+        const cred = parseValorPt(document.getElementById('pgValorCredito').value);
+        const totalRecebido = din + pix + deb + cred;
+
+        if (totalRecebido <= 0) {
+          mostrarAlerta('Informe a forma de pagamento (ex: 100% PIX, Dinheiro ou informe os valores)!', false);
+          return;
+        }
+
+        const dif = Math.round((totalRecebido - totalComandaBase) * 100) / 100;
+        if (dif < 0) {
+          mostrarAlerta('O valor informado (R$ ' + totalRecebido.toFixed(2).replace('.', ',') + ') &eacute; menor que o total da comanda (R$ ' + totalComandaBase.toFixed(2).replace('.', ',') + ')! Falta R$ ' + Math.abs(dif).toFixed(2).replace('.', ','), false);
+          return;
+        }
+
+        if (dif > 0) {
+          trocoVal = dif;
+        }
+
+        const dinLiquido = Math.max(0, din - trocoVal);
+
+        let partes = [];
+        if (dinLiquido > 0) partes.push('Dinheiro: ' + dinLiquido.toFixed(2));
+        if (pix > 0) partes.push('Pix: ' + pix.toFixed(2));
+        if (deb > 0) partes.push('Cart\u00e3o D\u00e9bito: ' + deb.toFixed(2));
+        if (cred > 0) partes.push('Cart\u00e3o Cr\u00e9dito: ' + cred.toFixed(2));
+
+        if (partes.length === 1) {
+          if (dinLiquido > 0) formaPgStr = 'Dinheiro';
+          else if (pix > 0) formaPgStr = 'Pix';
+          else if (deb > 0) formaPgStr = 'Cart\u00e3o D\u00e9bito';
+          else if (cred > 0) formaPgStr = 'Cart\u00e3o Cr\u00e9dito';
+        } else if (partes.length > 1) {
+          formaPgStr = partes.join(' | ');
+        } else {
+          formaPgStr = 'Dinheiro';
+        }
+      } else {
+        if (valorNum <= 0) {
+          mostrarAlerta('Informe um valor v&aacute;lido para o procedimento!', false);
+          return;
+        }
+      }
+
+      const btnAdd = document.getElementById('btnAddItem');
+      const btnFin = document.getElementById('btnFinalizar');
+      btnAdd.disabled = true;
+      btnFin.disabled = true;
+
+      const payload = {
+        numComanda: numComanda,
+        data: data,
+        cliente: cliente,
+        profissional: profissional,
+        descricao: descricao,
+        valor: valorNum,
+        formaPg: formaPgStr,
+        troco: trocoVal,
+        finalizar: finalizar
+      };
+
+      google.script.run
+        .withSuccessHandler(res => {
+          btnAdd.disabled = false;
+          btnFin.disabled = false;
+
+          if (res.status === 'duplicado') {
+            mostrarAlerta(res.mensagem, false);
+            return;
+          }
+
+          appState.comandasAbertas = res.comandasAbertas;
+          renderizarComandasAbertas();
+
+          if (res.cupom) {
+            appState.ultimoCupom = res.cupom;
+            preencherCupomPrint(res.cupom);
+          }
+
+          if (finalizar) {
+            mostrarAlerta('Comanda #' + numComanda + ' finalizada com sucesso!', true);
+            limparFormularioComanda(res.proximaComanda);
+          } else {
+            mostrarAlerta('Servi&ccedil;o de ' + profissional + ' adicionado &agrave; Comanda #' + numComanda + '!', true);
+            document.getElementById('valorItem').value = '';
+            document.getElementById('descricaoServico').value = '';
+
+            appState.comandaAtualItens.push({
+              profissional: profissional,
+              descricao: descricao,
+              valor: valorNum
+            });
+            atualizarTabelaItensTela();
+          }
+        })
+        .withFailureHandler(err => {
+          btnAdd.disabled = false;
+          btnFin.disabled = false;
+          tratarErro(err);
+        })
+        .salvarItemComanda(payload);
+    }
+
+    function limparFormularioComanda(proxima) {
+      document.getElementById('numComanda').value = proxima || '';
+      document.getElementById('cliente').value = '';
+      document.getElementById('valorItem').value = '';
+      document.getElementById('descricaoServico').value = '';
+      document.getElementById('pgValorDinheiro').value = '';
+      document.getElementById('pgValorPix').value = '';
+      document.getElementById('pgValorDebito').value = '';
+      document.getElementById('pgValorCredito').value = '';
+      document.getElementById('lblValorTrocoDevolver').innerText = 'R$ 0,00';
+      appState.comandaAtualItens = [];
+      atualizarTabelaItensTela();
+    }
+
+    function preencherCupomPrint(cupom) {
+      if (!cupom) return;
+      document.getElementById('p_num').innerText = cupom.numComanda;
+      document.getElementById('p_data').innerText = cupom.data;
+      document.getElementById('p_cliente').innerText = cupom.cliente;
+      document.getElementById('p_total').innerText = String(cupom.total).replace('.', ',');
+      document.getElementById('p_pg').innerText = cupom.formaPg;
+
+      const rowTroco = document.getElementById('p_row_troco');
+      if (cupom.troco && Number(cupom.troco) > 0) {
+        rowTroco.style.display = 'flex';
+        document.getElementById('p_troco').innerText = String(cupom.troco).replace('.', ',');
+      } else {
+        rowTroco.style.display = 'none';
+      }
+
+      let htmlItens = '';
+      cupom.itens.forEach(it => {
+        htmlItens += `
+          <div class="cupom-item">
+            <span>${it.servico} (${it.profissional})</span>
+            <span>R$ ${String(it.valor).replace('.', ',')}</span>
+          </div>
+        `;
+      });
+      document.getElementById('p_itens').innerHTML = htmlItens;
+    }
+
+    function imprimirCupomAtual() {
+      if (!appState.ultimoCupom && appState.comandaAtualItens.length > 0) {
+        preencherCupomPrint({
+          numComanda: document.getElementById('numComanda').value,
+          data: document.getElementById('dataAtendimento').value.split('-').reverse().join('/'),
+          cliente: document.getElementById('cliente').value,
+          formaPg: 'Finalizada',
+          troco: '0,00',
+          itens: appState.comandaAtualItens.map(it => ({ profissional: it.profissional, servico: it.descricao, valor: it.valor })),
+          total: document.getElementById('lblTotalComanda').innerText.replace('R$ ', '')
+        });
+      }
+      window.print();
+    }
+
+    function clicarAlternarModo() {
+      if (appState.modoGerencial || appState.profissionalLogada) {
+        appState.modoGerencial = false;
+        appState.profissionalLogada = null;
+        atualizarVisualModo();
+        mostrarAlerta('Modo Balc&atilde;o ativado.', true);
+      } else {
+        const modal = document.getElementById('modalPin');
+        const input = document.getElementById('inputPinGerencial');
+        const erro = document.getElementById('erroPinModal');
+        if (erro) erro.style.display = 'none';
+        if (input) input.value = '';
+        if (modal) {
+          modal.style.display = 'flex';
+          setTimeout(() => { if (input) input.focus(); }, 150);
+        }
+      }
+    }
+
+    function fecharModalPin() {
+      const modal = document.getElementById('modalPin');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function confirmarPinModal() {
+      const input = document.getElementById('inputPinGerencial');
+      const erro = document.getElementById('erroPinModal');
+      const pin = input ? input.value.trim() : '';
+      
+      const pinsPadrao = {
+        'paula': '1234',
+        'taty': '2345',
+        'fabiana': '3456',
+        'mariana': '4567',
+        'rose': '1209'
+      };
+
+      const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
+      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '1209';
+
+      // 1. PIN Gerencial / Master / Rose
+      if (pin === '8665' || (pinRose && pin === pinRose)) {
+        fecharModalPin();
+        appState.profissionalLogada = null;
+        ativarModoGerencial(true);
+        mostrarAlerta('&#9989; Acesso Gerencial ativado!', true);
+        return;
+      }
+
+      // 2. PIN Individual de Profissional (Paula, Taty, Fabiana, Mariana)
+      const profEncontrada = (appState.profissionais || []).find(p => {
+        const pinCadastrado = String(p.pin || '').trim();
+        const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
+        return (pinCadastrado === pin || pinPad === pin);
+      });
+
+      if (profEncontrada) {
+        fecharModalPin();
+        appState.modoGerencial = false;
+        appState.profissionalLogada = profEncontrada.nome;
+        atualizarVisualModo();
+        mudarAba('extrato');
+        mostrarAlerta('&#128100; Ol&aacute;, ' + profEncontrada.nome + '! Exibindo suas comiss&otilde;es.', true);
+        return;
+      }
+
+      // 3. PIN incorreto
+      if (erro) {
+        erro.innerText = 'PIN n&atilde;o reconhecido! Tente novamente.';
+        erro.style.display = 'block';
+      }
+      if (input) {
+        input.value = '';
+        input.focus();
+      }
+    }
+
+    function popularSelectLoginProf() {
+      const sel = document.getElementById('loginExtratoProf');
+      if (!sel || !appState.profissionais) return;
+      const valAtual = sel.value;
+      sel.innerHTML = '';
+      appState.profissionais.forEach(function(p) {
+        let opt = document.createElement('option');
+        opt.value = p.nome;
+        opt.text = p.nome;
+        sel.add(opt);
+      });
+      if (valAtual) sel.value = valAtual;
+    }
+
+    function popularSelectExtratoSemana(modoGerencial) {
+      const sel = document.getElementById('extratoSemana');
+      if (!sel) return;
+      const semAtual = appState.semanaAtual || 'S42';
+      const valAtual = sel.value || semAtual;
+
+      if (modoGerencial) {
+        sel.innerHTML = '';
+        for (let i = 1; i <= 53; i++) {
+          let opt = document.createElement('option');
+          opt.value = 'S' + i;
+          opt.text = 'Semana S' + i;
+          if (opt.value === valAtual) opt.selected = true;
+          sel.add(opt);
+        }
+        sel.disabled = false;
+        sel.style.background = '#fff';
+      } else {
+        // Para profissionais: APENAS a semana pendente de pagamento (S42)
+        sel.innerHTML = '<option value="' + semAtual + '">Semana ' + semAtual + ' (Pendente / Em Aberto)</option>';
+        sel.value = semAtual;
+        sel.disabled = true;
+        sel.style.background = '#f8fafc';
+      }
+    }
+
+    function popularSelectExtratoProf(modoGerencial) {
+      const sel = document.getElementById('extratoProfissional');
+      if (!sel || !appState.profissionais) return;
+      if (modoGerencial) {
+        const valAtual = sel.value;
+        sel.innerHTML = '<option value="TODAS">Todas as Profissionais</option>';
+        appState.profissionais.forEach(function(p) {
+          let opt = document.createElement('option');
+          opt.value = p.nome;
+          opt.text = p.nome;
+          sel.add(opt);
+        });
+        sel.disabled = false;
+        if (valAtual && valAtual !== 'TODAS') {
+          sel.value = valAtual;
+        } else {
+          sel.value = 'TODAS';
+        }
+      } else if (appState.profissionalLogada) {
+        sel.innerHTML = '<option value="' + appState.profissionalLogada + '">' + appState.profissionalLogada + '</option>';
+        sel.value = appState.profissionalLogada;
+        sel.disabled = true;
+      }
+    }
+
+    function autenticarExtratoProfissional() {
+      const sel = document.getElementById('loginExtratoProf');
+      const inp = document.getElementById('loginExtratoPin');
+      const erro = document.getElementById('erroLoginExtrato');
+      
+      const nomeProf = sel ? sel.value : '';
+      const pinDigitado = inp ? inp.value.trim() : '';
+
+      if (!nomeProf) {
+        if (erro) {
+          erro.innerText = 'Selecione a profissional.';
+          erro.style.display = 'block';
+        }
+        return;
+      }
+
+      const profObj = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === nomeProf.toLowerCase());
+      const pinsPadrao = {
+        'paula': '1234',
+        'taty': '2345',
+        'fabiana': '3456',
+        'mariana': '4567',
+        'rose': '1209'
+      };
+      const pinEsperado = (profObj && profObj.pin) ? String(profObj.pin).trim() : (pinsPadrao[nomeProf.toLowerCase()] || '1234');
+
+      if (pinDigitado === '8665' || (nomeProf.toLowerCase() === 'rose' && pinDigitado === pinEsperado)) {
+        if (erro) erro.style.display = 'none';
+        if (inp) inp.value = '';
+        ativarModoGerencial(true);
+        mostrarAlerta('&#9989; Acesso Gerencial ativado com sucesso!', true);
+        return;
+      }
+
+      if (pinDigitado === pinEsperado) {
+        if (erro) erro.style.display = 'none';
+        if (inp) inp.value = '';
+        appState.profissionalLogada = nomeProf;
+        aplicarModoExtrato();
+        mostrarAlerta('&#128100; Ol&aacute;, ' + nomeProf + '! Exibindo suas comiss&otilde;es.', true);
+      } else {
+        if (erro) {
+          erro.innerText = 'PIN incorreto para ' + nomeProf + '! Tente novamente.';
+          erro.style.display = 'block';
+        }
+        if (inp) {
+          inp.value = '';
+          inp.focus();
+        }
+      }
+    }
+
+    function sairExtratoProfissional() {
+      appState.profissionalLogada = null;
+      const inp = document.getElementById('loginExtratoPin');
+      if (inp) inp.value = '';
+      const erro = document.getElementById('erroLoginExtrato');
+      if (erro) erro.style.display = 'none';
+      atualizarVisualModo();
+      mostrarAlerta('Extrato individual bloqueado com sucesso.', true);
+    }
+
+    function aplicarModoExtrato() {
+      const cardLogin = document.getElementById('cardLoginExtrato');
+      const conteudoExtrato = document.getElementById('conteudoExtrato');
+      const barraProfLogada = document.getElementById('barraProfLogada');
+      const txtProfLogada = document.getElementById('txtProfLogada');
+      const cardFaturado = document.getElementById('cardKpiTotalFaturado');
+      const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
+
+      if (appState.modoGerencial) {
+        if (cardLogin) cardLogin.style.display = 'none';
+        if (conteudoExtrato) conteudoExtrato.style.display = 'block';
+        if (barraProfLogada) barraProfLogada.style.display = 'none';
+        if (cardFaturado) cardFaturado.style.display = 'block';
+        if (painelQuitacao) painelQuitacao.style.display = 'block';
+        popularSelectExtratoProf(true);
+        popularSelectExtratoSemana(true);
+        carregarExtrato();
+      } else if (appState.profissionalLogada) {
+        if (cardLogin) cardLogin.style.display = 'none';
+        if (conteudoExtrato) conteudoExtrato.style.display = 'block';
+        if (barraProfLogada) barraProfLogada.style.display = 'flex';
+        if (txtProfLogada) txtProfLogada.innerText = appState.profissionalLogada;
+        if (cardFaturado) cardFaturado.style.display = 'none';
+        if (painelQuitacao) painelQuitacao.style.display = 'none';
+        popularSelectExtratoProf(false);
+        popularSelectExtratoSemana(false);
+        carregarExtrato();
+      } else {
+        if (cardLogin) {
+          cardLogin.style.display = 'block';
+          popularSelectLoginProf();
+          setTimeout(function() {
+            const inp = document.getElementById('loginExtratoPin');
+            if (inp) inp.focus();
+          }, 150);
+        }
+        if (conteudoExtrato) conteudoExtrato.style.display = 'none';
+      }
+    }
+
+    function atualizarVisualModo() {
+      const badge = document.getElementById('badgeModo');
+      const btn = document.getElementById('btnAlternarModo');
+      const cardFaturado = document.getElementById('cardKpiTotalFaturado');
+      const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
+
+      if (appState.modoGerencial) {
+        if (badge) {
+          badge.innerHTML = '&#128081; Gerencial';
+          badge.style.background = '#27ae60';
+        }
+        if (btn) btn.innerHTML = '&#128274; Sair';
+        if (cardFaturado) cardFaturado.style.display = 'block';
+        if (painelQuitacao) painelQuitacao.style.display = 'block';
+      } else if (appState.profissionalLogada) {
+        if (badge) {
+          badge.innerHTML = '&#128100; ' + appState.profissionalLogada;
+          badge.style.background = '#8e44ad';
+        }
+        if (btn) btn.innerHTML = '&#128274; Sair';
+        if (cardFaturado) cardFaturado.style.display = 'none';
+        if (painelQuitacao) painelQuitacao.style.display = 'none';
+      } else {
+        if (badge) {
+          badge.innerHTML = '&#127970; Balc&atilde;o';
+          badge.style.background = 'rgba(255,255,255,0.2)';
+        }
+        if (btn) btn.innerHTML = '&#128273; PIN';
+        if (cardFaturado) cardFaturado.style.display = 'none';
+        if (painelQuitacao) painelQuitacao.style.display = 'none';
+      }
+
+      const abaExtrato = document.getElementById('aba-extrato');
+      if (abaExtrato && abaExtrato.style.display !== 'none') {
+        aplicarModoExtrato();
+      }
+      if (typeof aplicarFiltroDataConferencia === 'function') {
+        const abaConf = document.getElementById('aba-conferencia');
+        if (abaConf && abaConf.style.display !== 'none') {
+          aplicarFiltroDataConferencia();
+        }
+      }
+    }
+
+    function ativarModoGerencial(ativo) {
+      appState.modoGerencial = ativo;
+      if (!ativo) {
+        appState.profissionalLogada = null;
+      }
+      atualizarVisualModo();
+    }
+
+    function confirmarQuitacao(prof, comissao, faxina, liquido) {
+      const sem = document.getElementById('extratoSemana').value;
+      
+
+      google.script.run
+        .withSuccessHandler(res => {
+          mostrarAlerta(res.mensagem, res.status === 'sucesso');
+          carregarExtrato();
+        })
+        .withFailureHandler(tratarErro)
+        .confirmarPagamentoComissao({
+          semana: sem,
+          profissional: prof,
+          valorComissao: comissao,
+          rateioFaxina: faxina,
+          valorPago: liquido,
+          metodoPgto: 'Pix'
+        });
+    }
+
+    function cancelarQuitacao(prof) {
+      const sem = document.getElementById('extratoSemana').value;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          mostrarAlerta(res.mensagem, true);
+          carregarExtrato();
+        })
+        .withFailureHandler(tratarErro)
+        .cancelarPagamentoComissao({
+          semana: sem,
+          profissional: prof
+        });
+    }
+
+    function enviarWhatsAppComprovante(prof, sem, comissao, faxina, liquido) {
+      const msg = 'Ol\u00e1 ' + prof + '! Segue o demonstrativo de comiss\u00f5es da ' + sem + ' no Rose Est\u00e9tica:\n\n' +
+        '\u2022 Total Comiss\u00f5es: R$ ' + comissao.replace('.', ',') + '\n' +
+        '\u2022 Rateio Faxina: - R$ ' + faxina.replace('.', ',') + '\n' +
+        '\u2022 \u2705 L\u00edquido Pago: R$ ' + liquido.replace('.', ',') + '\n\n' +
+        'Comiss\u00f5es quitadas com sucesso. Muito obrigado pelo seu trabalho!';
+      const url = ['https:', '', 'api.whatsapp.com', 'send?text=' + encodeURIComponent(msg)].join('/');
+      window.open(url, '_blank');
+    }
+
+    function carregarExtrato() {
+      const sem = document.getElementById('extratoSemana').value;
+      const prof = document.getElementById('extratoProfissional').value;
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (!res) return;
+          if (res.erro) {
+            mostrarAlerta('Erro no extrato: ' + res.erro, false);
+          }
+
+          const elBruto = document.getElementById('kpiTotalBruto');
+          const elComissao = document.getElementById('kpiTotalComissao');
+          const elLiquido = document.getElementById('kpiLiquido');
+          const elFaxina = document.getElementById('kpiFaxina');
+
+          if (elBruto) elBruto.innerText = 'R$ ' + String(res.totalBruto || '0,00').replace('.', ',');
+          if (elComissao) elComissao.innerText = 'R$ ' + String(res.totalComissao || '0,00').replace('.', ',');
+          if (elLiquido) elLiquido.innerText = 'R$ ' + String(res.liquidoAPagar || '0,00').replace('.', ',');
+          if (elFaxina) elFaxina.innerText = '- R$ 30,00';
+
+          const cardFaturado = document.getElementById('cardKpiTotalFaturado');
+          if (cardFaturado) {
+            cardFaturado.style.display = appState.modoGerencial ? 'block' : 'none';
+          }
+
+          const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
+          const corpoQuitacao = document.getElementById('corpoTabelaQuitacao');
+          if (painelQuitacao) {
+            painelQuitacao.style.display = appState.modoGerencial ? 'block' : 'none';
+          }
+
+          if (corpoQuitacao && res.resumoProfissionais) {
+            corpoQuitacao.innerHTML = '';
+            if (res.resumoProfissionais.length === 0) {
+              corpoQuitacao.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray-text); padding: 12px;">Nenhum atendimento finalizado nesta semana para quita&ccedil;&atilde;o.</td></tr>';
+            } else {
+              res.resumoProfissionais.forEach(rp => {
+                let tr = document.createElement('tr');
+                const isPago = rp.status === 'Pago';
+                const statusBadge = isPago
+                  ? `<span class="badge" style="background: #e8f8f5; color: #117a65; border: 1px solid #a3e4d7; padding: 4px 8px; border-radius: 4px; font-size: 11px;">&#9989; Pago (${rp.dataPgto.split(' ')[0]})</span>`
+                  : `<span class="badge" style="background: #fef9e7; color: #b7950b; border: 1px solid #f9e79f; padding: 4px 8px; border-radius: 4px; font-size: 11px;">&#9888;&#65039; Pendente</span>`;
+
+                const btnAcao = isPago
+                  ? `<div style="display: flex; gap: 4px; justify-content: center;">
+                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 8px; color: #27ae60;" onclick="enviarWhatsAppComprovante('${rp.profissional}', '${res.semana}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}')">&#128242; WhatsApp</button>
+                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 8px; color: var(--gray-text);" title="Desmarcar" onclick="cancelarQuitacao('${rp.profissional}')">&#8635;</button>
+                     </div>`
+                  : `<button class="btn btn-success" style="font-size: 11px; padding: 5px 10px;" onclick="confirmarQuitacao('${rp.profissional}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}')">&#128176; Confirmar Pgto</button>`;
+
+                tr.innerHTML = `
+                  <td><strong>${rp.profissional}</strong></td>
+                  <td style="text-align: center;">${rp.atendimentos}</td>
+                  <td style="text-align: right;">R$ ${String(rp.totalComissao).replace('.', ',')}</td>
+                  <td style="text-align: right; color: var(--warning-dark);">- R$ ${String(rp.rateioFaxina).replace('.', ',')}</td>
+                  <td style="text-align: right; font-weight: bold; color: var(--primary);">R$ ${String(rp.liquidoAPagar).replace('.', ',')}</td>
+                  <td style="text-align: center;">${statusBadge}</td>
+                  <td style="text-align: center;">${btnAcao}</td>
+                `;
+                corpoQuitacao.appendChild(tr);
+              });
+            }
+          }
+
+          const tbody = document.getElementById('tabelaExtratoCorpo');
+          if (!tbody) return;
+          tbody.innerHTML = '';
+
+          if (!res.linhas || res.linhas.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--gray-text); padding: 18px;">Nenhum lan&ccedil;amento finalizado nesta semana para este filtro.</td></tr>';
+            return;
+          }
+
+          res.linhas.forEach(l => {
+            let tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${l.data}</td>
+              <td><strong>#${l.numComanda}</strong></td>
+              <td>${l.cliente}</td>
+              <td>${l.profissional}</td>
+              <td>${l.descricao}</td>
+              <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
+              <td style="text-align: right; color: var(--success); font-weight: bold;">R$ ${String(l.comissao).replace('.', ',')}</td>
+            `;
+            tbody.appendChild(tr);
+          });
+        })
+        .withFailureHandler(tratarErro)
+        .getExtratoSemanal(sem, prof, !!appState.modoGerencial);
+    }
+
+    let cacheConferencia = null;
+
+    function getHojeIso() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dia = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + dia;
+    }
+
+    function getOntemIso() {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dia = String(d.getDate()).padStart(2, '0');
+      return y + '-' + m + '-' + dia;
+    }
+
+    function formatarDataPt(isoStr) {
+      if (!isoStr) return '';
+      const p = isoStr.split('-');
+      if (p.length === 3) return p[2] + '/' + p[1] + '/' + p[0];
+      return isoStr;
+    }
+
+    function definirFiltroDataConf(modo) {
+      const filtroInput = document.getElementById('confFiltroData');
+      if (!filtroInput) return;
+      if (modo === 'hoje') {
+        filtroInput.value = getHojeIso();
+      } else if (modo === 'ontem') {
+        filtroInput.value = getOntemIso();
+      } else if (modo === 'semana') {
+        filtroInput.value = '';
+      }
+      aplicarFiltroDataConferencia();
+    }
+
+    function parsePagamentoStr(forma, valorTotal) {
+      const res = { dinheiro: 0, pix: 0, debito: 0, credito: 0, cheque: 0, outros: 0 };
+      const str = String(forma || '').trim();
+      if (str.indexOf('|') !== -1 || str.indexOf(':') !== -1) {
+        const partes = str.split('|');
+        partes.forEach(p => {
+          if (p.indexOf(':') !== -1) {
+            const segs = p.split(':');
+            const tipo = segs[0].trim().toLowerCase();
+            let valStr = segs.length > 1 ? segs[1] : '0';
+            valStr = String(valStr).replace('R$', '').replace(/\s+/g, '').replace(',', '.');
+            const v = parseFloat(valStr) || 0;
+            if (tipo.indexOf('din') !== -1) res.dinheiro += v;
+            else if (tipo.indexOf('pix') !== -1) res.pix += v;
+            else if (tipo.indexOf('d\u00e9b') !== -1 || tipo.indexOf('deb') !== -1) res.debito += v;
+            else if (tipo.indexOf('cr\u00e9d') !== -1 || tipo.indexOf('cred') !== -1) res.credito += v;
+            else if (tipo.indexOf('cheq') !== -1) res.cheque += v;
+            else res.outros += v;
+          }
+        });
+      } else {
+        const tipo = str.toLowerCase();
+        if (tipo.indexOf('din') !== -1 || tipo === 'd') res.dinheiro += valorTotal;
+        else if (tipo.indexOf('pix') !== -1) res.pix += valorTotal;
+        else if (tipo.indexOf('d\u00e9b') !== -1 || tipo.indexOf('deb') !== -1 || tipo === 'cd') res.debito += valorTotal;
+        else if (tipo.indexOf('cr\u00e9d') !== -1 || tipo.indexOf('cred') !== -1 || tipo === 'cc') res.credito += valorTotal;
+        else if (tipo.indexOf('cheq') !== -1 || tipo === 'ch') res.cheque += valorTotal;
+        else res.outros += valorTotal;
+      }
+      return res;
+    }
+
+    function carregarConferencia() {
+      const sem = appState.semanaAtual || 'S42';
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        console.log('google.script nao disponivel para carregarConferencia');
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(res => {
+          cacheConferencia = res;
+          const filtroInput = document.getElementById('confFiltroData');
+          if (filtroInput && (!filtroInput.value || !appState.modoGerencial)) {
+            filtroInput.value = getHojeIso();
+          }
+          aplicarFiltroDataConferencia();
+        })
+        .withFailureHandler(tratarErro)
+        .getExtratoSemanal(sem, 'TODAS', true);
+    }
+
+    function aplicarFiltroDataConferencia() {
+      if (!cacheConferencia || !cacheConferencia.linhas) return;
+
+      const barraFiltro = document.getElementById('barraFiltroDataConf');
+      const barraHoje = document.getElementById('barraInfoCaixaHoje');
+      const lblDataHoje = document.getElementById('lblDataCaixaHoje');
+      const thConf = document.getElementById('thConfCaixa');
+      const filtroInput = document.getElementById('confFiltroData');
+      const hojeIso = getHojeIso();
+      const ontemIso = getOntemIso();
+
+      // Ajuste visual exclusivo por modo: Gerencial vs Profissional/Balcao
+      if (appState.modoGerencial) {
+        if (barraFiltro) barraFiltro.style.display = 'flex';
+        if (barraHoje) barraHoje.style.display = 'none';
+        if (thConf) thConf.style.display = 'table-cell';
+      } else {
+        if (barraFiltro) barraFiltro.style.display = 'none';
+        if (barraHoje) barraHoje.style.display = 'flex';
+        if (lblDataHoje) lblDataHoje.innerText = formatarDataPt(hojeIso);
+        if (thConf) thConf.style.display = 'none';
+        if (filtroInput) filtroInput.value = hojeIso;
+      }
+
+      // No Modo Balcao / Profissional, o filtro eh ESTRITAMENTE a data de hoje
+      const dataFiltro = appState.modoGerencial ? (filtroInput ? filtroInput.value : hojeIso) : hojeIso;
+      const statusEl = document.getElementById('lblStatusFiltroConf');
+
+      if (statusEl) {
+        if (!dataFiltro) {
+          statusEl.innerText = 'Exibindo: Toda a Semana (' + (cacheConferencia.semana || '') + ')';
+        } else if (dataFiltro === hojeIso) {
+          statusEl.innerText = 'Exibindo: Hoje (' + formatarDataPt(dataFiltro) + ')';
+        } else if (dataFiltro === ontemIso) {
+          statusEl.innerText = 'Exibindo: Ontem (' + formatarDataPt(dataFiltro) + ')';
+        } else {
+          statusEl.innerText = 'Exibindo: ' + formatarDataPt(dataFiltro);
+        }
+      }
+
+      const linhasFiltradas = cacheConferencia.linhas.filter(l => {
+        if (!dataFiltro) return true;
+        return l.dataIso === dataFiltro;
+      });
+
+      const comandas = {};
+      linhasFiltradas.forEach(l => {
+        const num = l.numComanda;
+        if (!comandas[num]) {
+          comandas[num] = {
+            total: 0,
+            formaPg: l.formaPg,
+            troco: parseFloat(l.troco) || 0
+          };
+        }
+        comandas[num].total += (parseFloat(l.valor) || 0);
+      });
+
+      const totais = { dinheiro: 0, pix: 0, debito: 0, credito: 0, cheque: 0, outros: 0, total: 0, troco: 0 };
+      for (let num in comandas) {
+        const c = comandas[num];
+        const dist = parsePagamentoStr(c.formaPg, c.total);
+        totais.dinheiro += dist.dinheiro;
+        totais.pix += dist.pix;
+        totais.debito += dist.debito;
+        totais.credito += dist.credito;
+        totais.cheque += dist.cheque;
+        totais.outros += dist.outros;
+        totais.total += c.total;
+        totais.troco += c.troco;
+      }
+
+      const elDin = document.getElementById('kpiPgDinheiro');
+      const elTroco = document.getElementById('lblSubTroco');
+      const elPix = document.getElementById('kpiPgPix');
+      const elDeb = document.getElementById('kpiPgDebito');
+      const elCred = document.getElementById('kpiPgCredito');
+      const elTot = document.getElementById('kpiPgTotal');
+
+      if (elDin) elDin.innerText = 'R$ ' + totais.dinheiro.toFixed(2).replace('.', ',');
+      if (elTroco) elTroco.innerText = 'Troco: R$ ' + totais.troco.toFixed(2).replace('.', ',');
+      if (elPix) elPix.innerText = 'R$ ' + totais.pix.toFixed(2).replace('.', ',');
+      if (elDeb) elDeb.innerText = 'R$ ' + totais.debito.toFixed(2).replace('.', ',');
+      if (elCred) elCred.innerText = 'R$ ' + totais.credito.toFixed(2).replace('.', ',');
+      if (elTot) elTot.innerText = 'R$ ' + totais.total.toFixed(2).replace('.', ',');
+
+      const tbody = document.getElementById('tabelaConferenciaCorpo');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      const totalColunas = appState.modoGerencial ? 8 : 7;
+      if (linhasFiltradas.length === 0) {
+        const msg = dataFiltro ? ('Nenhum pagamento encontrado para a data ' + formatarDataPt(dataFiltro) + '.') : 'Nenhum pagamento finalizado encontrado nesta semana.';
+        tbody.innerHTML = '<tr><td colspan="' + totalColunas + '" style="text-align: center; color: var(--gray-text); padding: 18px;">' + msg + '</td></tr>';
+        return;
+      }
+
+      linhasFiltradas.forEach(l => {
+        let tr = document.createElement('tr');
+        let trocoTxt = (Number(l.troco) > 0) ? ('R$ ' + String(l.troco).replace('.', ',')) : '-';
+        
+        // A coluna com checkbox de confirmacao so aparece no Modo Gerencial!
+        const colConf = appState.modoGerencial
+          ? `<td style="text-align: center;"><input type="checkbox" ${l.conferido ? 'checked' : ''} onchange="alternarConf(${l.id}, this.checked)"></td>`
+          : '';
+
+        tr.innerHTML = `
+          ${colConf}
+          <td>${l.data}</td>
+          <td><strong>#${l.numComanda}</strong></td>
+          <td>${l.cliente}</td>
+          <td>${l.profissional}</td>
+          <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
+          <td style="text-align: right;"><strong>R$ ${String(l.valor).replace('.', ',')}</strong></td>
+          <td style="text-align: right; color: var(--secondary-dark);">${trocoTxt}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function alternarConf(idRegistro, checked) {
+      if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run.alternarConferenciaCartao(idRegistro, checked);
+      }
+    }
+
+
+    function mudarAba(aba) {
+      ['comanda', 'abertas', 'extrato', 'conferencia'].forEach(a => {
+        document.getElementById('aba-' + a).style.display = (a === aba) ? 'block' : 'none';
+      });
+
+      const btns = document.querySelectorAll('.tab-btn');
+      btns.forEach((b, idx) => {
+        b.classList.remove('active');
+        if (
+          (aba === 'comanda' && idx === 0) ||
+          (aba === 'abertas' && idx === 1) ||
+          (aba === 'extrato' && idx === 2) ||
+          (aba === 'conferencia' && idx === 3)
+        ) {
+          b.classList.add('active');
+        }
+      });
+
+      if (aba === 'extrato') aplicarModoExtrato();
+      if (aba === 'conferencia') carregarConferencia();
+    }
+
+    function mostrarAlerta(msg, sucesso) {
+      const el = document.getElementById('alertGlobal');
+      el.innerHTML = msg;
+      el.className = 'alert ' + (sucesso ? 'alert-success' : 'alert-error');
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    function tratarErro(err) {
+      console.error('tratarErro:', err);
+      const msg = (err && err.message) ? err.message : String(err || 'Erro de comunicacao');
+      const lblSemana = document.getElementById('lblSemanaTopo');
+      if (lblSemana && lblSemana.innerText === 'Carregando...') {
+        lblSemana.innerText = 'Ref: S42';
+      }
+      mostrarAlerta('Erro na comunica&ccedil;&atilde;o com a planilha: ' + msg, false);
+    }
+  </script>
+</body>
+</html>
