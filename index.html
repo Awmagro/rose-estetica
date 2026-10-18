@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <base target="_top">
@@ -11,7 +11,7 @@
   <meta name="apple-mobile-web-app-title" content="Rose Est&eacute;tica">
   <meta name="theme-color" content="#6c3483">
   <meta name="msapplication-navbutton-color" content="#6c3483">
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
   <link rel="apple-touch-icon" sizes="512x512" href="icons/icon-512.png">
   <link rel="manifest" href="manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -36,6 +36,9 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+    html, body {
+      overscroll-behavior-y: contain;
+    }
     body { background-color: #f1f5f9; color: var(--dark); padding-bottom: 40px; }
 
     /* Top Bar */
@@ -289,12 +292,55 @@
     </div>
     <div style="display: flex; gap: 6px; align-items: center;">
       <span class="badge" id="lblSemanaTopo" style="padding: 4px 8px; font-size: 12px;">Ref: S42</span>
-      <span class="badge" id="badgeModo" style="background: rgba(255,255,255,0.2); cursor: pointer; padding: 4px 8px; font-size: 12px;" onclick="clicarAlternarModo()">&#127970; Balc&atilde;o</span>
-      <button type="button" id="btnAlternarModo" class="btn" style="background: rgba(255,255,255,0.25); color: #fff; padding: 4px 10px; font-size: 11px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;" onclick="clicarAlternarModo()">&#128273; PIN</button>
+      <span class="badge" id="badgeModo" style="background: rgba(255,255,255,0.2); cursor: pointer; padding: 4px 8px; font-size: 12px;" onclick="clicarAlternarModo()">&#128273; Entrar</span>
+      <button type="button" id="btnSairModo" class="btn" style="background: rgba(255,255,255,0.25); color: #fff; padding: 4px 10px; font-size: 11px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;" onclick="fazerLogout()">&#128274; Sair</button>
     </div>
   </div>
 
-  <div class="container no-print">
+  <!-- TELA DE BLOQUEIO / IDENTIFICACAO INICIAL (ACESSO OBRIGATORIO) -->
+  <div id="telaLoginBloqueio" style="display: none; min-height: 80vh; align-items: center; justify-content: center; padding: 20px 16px;">
+    <div style="background: #ffffff; border-radius: 16px; padding: 32px 22px; max-width: 390px; width: 100%; box-shadow: 0 12px 35px rgba(0,0,0,0.12); text-align: center; border: 1px solid var(--gray-border);">
+      <div style="margin-bottom: 14px;">
+        <img src="data:image/jpeg;base64,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" alt="Logo Rose Estetica" style="height: 64px; width: auto; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);">
+      </div>
+      <h2 style="color: var(--primary); font-size: 20px; font-weight: 800; margin-bottom: 4px;">Acesso ao Sistema</h2>
+      <p style="font-size: 13px; color: var(--gray-text); margin-bottom: 20px; line-height: 1.4;">
+        Para digitar comandas e consultar o caixa, digite seu PIN de acesso:
+      </p>
+
+      <div style="text-align: left; margin-bottom: 14px;">
+        <label for="loginInicialProf" style="font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 4px; display: block;">Identificar como (Opcional):</label>
+        <select id="loginInicialProf" style="width: 100%; padding: 10px 12px; border: 1px solid var(--gray-border); border-radius: 8px; font-size: 14px; background: #fff;">
+          <option value="AUTO">&#128273; Identifica&ccedil;&atilde;o Autom&aacute;tica pelo PIN</option>
+        </select>
+      </div>
+
+      <div style="text-align: left; margin-bottom: 16px;">
+        <label for="inputPinLoginInicial" style="font-size: 12px; font-weight: 700; color: var(--dark); margin-bottom: 4px; display: block;">Senha / PIN de Acesso:</label>
+        <input type="password" id="inputPinLoginInicial" inputmode="numeric" maxlength="6" placeholder="****" style="width: 100%; font-size: 26px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; outline: none; box-sizing: border-box;" onkeydown="if(event.key==='Enter') confirmarLoginInicial()">
+        <div id="erroLoginInicial" style="display: none; color: var(--danger); font-size: 12px; font-weight: bold; margin-top: 8px; text-align: center;">PIN n&atilde;o reconhecido! Tente novamente.</div>
+      </div>
+
+      <!-- Caixa de Acesso Rapido (Lembrar neste aparelho) -->
+      <label style="display: flex; align-items: flex-start; gap: 10px; text-align: left; background: #fdf4ff; border: 1px solid #f0abfc; padding: 10px 12px; border-radius: 8px; margin-bottom: 20px; cursor: pointer;">
+        <input type="checkbox" id="chkLembrarAcesso" checked style="margin-top: 3px; transform: scale(1.2); accent-color: var(--primary);">
+        <span style="font-size: 12px; color: var(--dark); line-height: 1.35;">
+          <strong>Lembrar neste aparelho (Acesso R&aacute;pido)</strong><br>
+          <span style="color: var(--gray-text); font-size: 11px;">Marque no seu celular para entrar direto sem precisar digitar a senha toda vez.</span>
+        </span>
+      </label>
+
+      <button type="button" class="btn btn-primary btn-block" style="padding: 13px; font-size: 15px; font-weight: 700;" onclick="confirmarLoginInicial()">
+        &#128275; Entrar no Sistema
+      </button>
+
+      <div style="margin-top: 18px; font-size: 11px; color: var(--gray-text);">
+        &#128737; Sistema protegido &bull; Rose Est&eacute;tica e Bem Estar
+      </div>
+    </div>
+  </div>
+
+  <div id="appPrincipal" class="container no-print" style="display: none;">
 
     <!-- Tabs Navigation (Descricoes Simplificadas e Compactas para Celular) -->
     <div class="nav-tabs">
@@ -839,6 +885,7 @@
       console.log('[PWA] Adaptador Google Apps Script inicializado em modo standalone HTTP API.');
     }
     // ======================================================================
+    const CHAVE_STORAGE_AUTH = 'rose_estetica_auth_v1';
 
     let appState = {
       profissionais: [
@@ -856,8 +903,184 @@
       comandaAtualItens: [],
       ultimoCupom: null,
       modoGerencial: false,
-      profissionalLogada: null
+      profissionalLogada: null,
+      autenticado: false
     };
+
+    function salvarSessao(modo, nome, permanente) {
+      try {
+        const payload = {
+          autenticado: true,
+          modo: modo,
+          nome: nome || '',
+          timestamp: Date.now()
+        };
+        sessionStorage.setItem(CHAVE_STORAGE_AUTH, JSON.stringify(payload));
+        if (permanente) {
+          localStorage.setItem(CHAVE_STORAGE_AUTH, JSON.stringify(payload));
+        } else {
+          localStorage.removeItem(CHAVE_STORAGE_AUTH);
+        }
+      } catch (e) {
+        console.warn('Erro ao salvar sessao:', e);
+      }
+    }
+
+    function limparSessao() {
+      try {
+        sessionStorage.removeItem(CHAVE_STORAGE_AUTH);
+        localStorage.removeItem(CHAVE_STORAGE_AUTH);
+      } catch (e) {
+        console.warn('Erro ao limpar sessao:', e);
+      }
+    }
+
+    function obterSessaoSalva() {
+      try {
+        const itemSession = sessionStorage.getItem(CHAVE_STORAGE_AUTH);
+        if (itemSession) return JSON.parse(itemSession);
+        const itemLocal = localStorage.getItem(CHAVE_STORAGE_AUTH);
+        if (itemLocal) return JSON.parse(itemLocal);
+      } catch (e) {
+        console.warn('Erro ao ler sessao:', e);
+      }
+      return null;
+    }
+
+    function exibirAppAutenticado(autenticado) {
+      const telaBloqueio = document.getElementById('telaLoginBloqueio');
+      const appPrincipal = document.getElementById('appPrincipal');
+
+      if (autenticado) {
+        if (telaBloqueio) telaBloqueio.style.display = 'none';
+        if (appPrincipal) appPrincipal.style.display = 'block';
+        if (appState.profissionalLogada) {
+          const selProf = document.getElementById('selProfissional');
+          if (selProf) selProf.value = appState.profissionalLogada;
+        }
+      } else {
+        if (telaBloqueio) telaBloqueio.style.display = 'flex';
+        if (appPrincipal) appPrincipal.style.display = 'none';
+        popularSelectLoginInicial();
+        setTimeout(() => {
+          const inp = document.getElementById('inputPinLoginInicial');
+          if (inp) {
+            inp.value = '';
+            inp.focus();
+          }
+        }, 150);
+      }
+    }
+
+    function popularSelectLoginInicial() {
+      const sel = document.getElementById('loginInicialProf');
+      if (!sel) return;
+      const valAtual = sel.value;
+      sel.innerHTML = '<option value="AUTO">&#128273; Identifica&ccedil;&atilde;o Autom&aacute;tica pelo PIN</option>';
+      (appState.profissionais || []).forEach(p => {
+        let opt = document.createElement('option');
+        opt.value = p.nome;
+        opt.text = p.nome + (p.nome.toLowerCase() === 'rose' ? ' (Gerencial)' : '');
+        sel.add(opt);
+      });
+      if (valAtual) sel.value = valAtual;
+    }
+
+    function confirmarLoginInicial() {
+      const sel = document.getElementById('loginInicialProf');
+      const inp = document.getElementById('inputPinLoginInicial');
+      const erro = document.getElementById('erroLoginInicial');
+      const chkLembrar = document.getElementById('chkLembrarAcesso');
+      
+      const nomeEscolhido = sel ? sel.value : 'AUTO';
+      const pin = inp ? inp.value.trim() : '';
+
+      if (!pin) {
+        if (erro) {
+          erro.innerText = 'Por favor, digite seu PIN.';
+          erro.style.display = 'block';
+        }
+        if (inp) inp.focus();
+        return;
+      }
+
+      const pinsPadrao = {
+        'paula': '1234',
+        'taty': '2345',
+        'fabiana': '3456',
+        'mariana': '4567',
+        'rose': '1209'
+      };
+
+      const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
+      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '1209';
+
+      // 1. PIN Gerencial Master ou Rose
+      if (pin === '8665' || (pinRose && pin === pinRose) || (nomeEscolhido.toLowerCase() === 'rose' && pin === pinRose)) {
+        if (erro) erro.style.display = 'none';
+        appState.autenticado = true;
+        appState.modoGerencial = true;
+        appState.profissionalLogada = null;
+        const lembrar = chkLembrar ? chkLembrar.checked : false;
+        salvarSessao('gerencial', 'Rose', lembrar);
+        exibirAppAutenticado(true);
+        atualizarVisualModo();
+        mostrarAlerta('&#9989; Acesso Gerencial ativado com sucesso!', true);
+        return;
+      }
+
+      // 2. PIN Individual de Profissional
+      let profEncontrada = null;
+      if (nomeEscolhido && nomeEscolhido !== 'AUTO') {
+        profEncontrada = (appState.profissionais || []).find(p => {
+          const pinCad = String(p.pin || '').trim();
+          const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
+          return p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinCad === pin || pinPad === pin);
+        });
+      } else {
+        profEncontrada = (appState.profissionais || []).find(p => {
+          const pinCad = String(p.pin || '').trim();
+          const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
+          return (pinCad === pin || pinPad === pin);
+        });
+      }
+
+      if (profEncontrada) {
+        if (erro) erro.style.display = 'none';
+        appState.autenticado = true;
+        appState.modoGerencial = false;
+        appState.profissionalLogada = profEncontrada.nome;
+        const lembrar = chkLembrar ? chkLembrar.checked : false;
+        salvarSessao('profissional', profEncontrada.nome, lembrar);
+        exibirAppAutenticado(true);
+        atualizarVisualModo();
+        mostrarAlerta('&#128100; Ol&aacute;, ' + profEncontrada.nome + '! Acesso liberado.', true);
+        return;
+      }
+
+      // 3. PIN incorreto
+      if (erro) {
+        erro.innerText = 'PIN n&atilde;o reconhecido! Tente novamente.';
+        erro.style.display = 'block';
+      }
+      if (inp) {
+        inp.value = '';
+        inp.focus();
+      }
+    }
+
+    function fazerLogout() {
+      const nomeUser = appState.modoGerencial ? 'Acesso Gerencial' : (appState.profissionalLogada || 'sua conta');
+      if (confirm('Deseja sair de ' + nomeUser + ' e bloquear o aplicativo neste aparelho?')) {
+        limparSessao();
+        appState.autenticado = false;
+        appState.modoGerencial = false;
+        appState.profissionalLogada = null;
+        exibirAppAutenticado(false);
+        atualizarVisualModo();
+        mostrarAlerta('Aplicativo bloqueado com sucesso.', true);
+      }
+    }
 
     (function inicializarInterfaceImediata() {
       try {
@@ -881,7 +1104,26 @@
         const selSem = document.getElementById('extratoSemana');
         if (selSem) selSem.value = appState.semanaAtual;
 
-        ativarModoGerencial(false);
+        // Verifica sessao salva no localStorage (Acesso Rapido sem pedir senha repetida)
+        const sessaoSalva = obterSessaoSalva();
+        if (sessaoSalva && sessaoSalva.autenticado) {
+          appState.autenticado = true;
+          if (sessaoSalva.modo === 'gerencial') {
+            appState.modoGerencial = true;
+            appState.profissionalLogada = null;
+          } else {
+            appState.modoGerencial = false;
+            appState.profissionalLogada = sessaoSalva.nome;
+          }
+          exibirAppAutenticado(true);
+        } else {
+          appState.autenticado = false;
+          appState.modoGerencial = false;
+          appState.profissionalLogada = null;
+          exibirAppAutenticado(false);
+        }
+
+        atualizarVisualModo();
       } catch (eInit) {
         console.error('Aviso inicializacao local:', eInit);
       }
@@ -946,6 +1188,7 @@
         }
 
         popularSelectLoginProf();
+        popularSelectLoginInicial();
 
         const selProf = document.getElementById('selProfissional');
         if (selProf && appState.profissionais) {
@@ -955,6 +1198,9 @@
             opt.value = p.nome; opt.text = p.nome;
             selProf.add(opt);
           });
+          if (appState.profissionalLogada) {
+            selProf.value = appState.profissionalLogada;
+          }
         }
         popularSelectExtratoProf(appState.modoGerencial);
 
@@ -1410,6 +1656,10 @@
       document.getElementById('pgValorDebito').value = '';
       document.getElementById('pgValorCredito').value = '';
       document.getElementById('lblValorTrocoDevolver').innerText = 'R$ 0,00';
+      if (appState.profissionalLogada) {
+        const selProf = document.getElementById('selProfissional');
+        if (selProf) selProf.value = appState.profissionalLogada;
+      }
       appState.comandaAtualItens = [];
       atualizarTabelaItensTela();
     }
@@ -1458,11 +1708,11 @@
     }
 
     function clicarAlternarModo() {
-      if (appState.modoGerencial || appState.profissionalLogada) {
-        appState.modoGerencial = false;
-        appState.profissionalLogada = null;
-        atualizarVisualModo();
-        mostrarAlerta('Modo Balc&atilde;o ativado.', true);
+      if (appState.modoGerencial) {
+        if (confirm('Deseja sair do Modo Gerencial e voltar ao modo Balc\u00e3o?')) {
+          ativarModoGerencial(false);
+          mostrarAlerta('Modo Balc&atilde;o ativado.', true);
+        }
       } else {
         const modal = document.getElementById('modalPin');
         const input = document.getElementById('inputPinGerencial');
@@ -1517,6 +1767,10 @@
         fecharModalPin();
         appState.modoGerencial = false;
         appState.profissionalLogada = profEncontrada.nome;
+        try {
+          const eraPermanente = !!(localStorage.getItem(CHAVE_STORAGE_AUTH));
+          salvarSessao('profissional', profEncontrada.nome, eraPermanente);
+        } catch (e) {}
         atualizarVisualModo();
         mudarAba('extrato');
         mostrarAlerta('&#128100; Ol&aacute;, ' + profEncontrada.nome + '! Exibindo suas comiss&otilde;es.', true);
@@ -1750,6 +2004,16 @@
       if (!ativo) {
         appState.profissionalLogada = null;
       }
+      try {
+        const eraPermanente = !!(localStorage.getItem(CHAVE_STORAGE_AUTH));
+        if (ativo) {
+          salvarSessao('gerencial', 'Rose', eraPermanente);
+        } else if (appState.autenticado) {
+          salvarSessao('balcao', '', eraPermanente);
+        }
+      } catch (eSess) {
+        console.warn('Erro sync sessao gerencial:', eSess);
+      }
       atualizarVisualModo();
     }
 
@@ -1926,7 +2190,11 @@
       } else if (modo === 'semana') {
         filtroInput.value = '';
       }
-      aplicarFiltroDataConferencia();
+      if (!cacheConferencia || !cacheConferencia.linhas) {
+        carregarConferencia();
+      } else {
+        aplicarFiltroDataConferencia();
+      }
     }
 
     function parsePagamentoStr(forma, valorTotal) {
@@ -1962,7 +2230,6 @@
     }
 
     function carregarConferencia() {
-      const sem = appState.semanaAtual || 'S42';
       if (typeof google === 'undefined' || !google.script || !google.script.run) {
         console.log('google.script nao disponivel para carregarConferencia');
         return;
@@ -1971,13 +2238,17 @@
         .withSuccessHandler(res => {
           cacheConferencia = res;
           const filtroInput = document.getElementById('confFiltroData');
-          if (filtroInput && (!filtroInput.value || !appState.modoGerencial)) {
-            filtroInput.value = getHojeIso();
+          if (filtroInput) {
+            if (!appState.modoGerencial) {
+              filtroInput.value = getHojeIso();
+            } else if (!filtroInput.value) {
+              filtroInput.value = getHojeIso();
+            }
           }
           aplicarFiltroDataConferencia();
         })
         .withFailureHandler(tratarErro)
-        .getExtratoSemanal(sem, 'TODAS', true);
+        .getExtratoSemanal('CONFERENCIA', 'TODAS', true);
     }
 
     function aplicarFiltroDataConferencia() {
@@ -2006,11 +2277,12 @@
 
       // No Modo Balcao / Profissional, o filtro eh ESTRITAMENTE a data de hoje
       const dataFiltro = appState.modoGerencial ? (filtroInput ? filtroInput.value : hojeIso) : hojeIso;
+      const dataPtFiltro = formatarDataPt(dataFiltro);
       const statusEl = document.getElementById('lblStatusFiltroConf');
 
       if (statusEl) {
         if (!dataFiltro) {
-          statusEl.innerText = 'Exibindo: Toda a Semana (' + (cacheConferencia.semana || '') + ')';
+          statusEl.innerText = 'Exibindo: Toda a Semana (' + (appState.semanaAtual || '') + ')';
         } else if (dataFiltro === hojeIso) {
           statusEl.innerText = 'Exibindo: Hoje (' + formatarDataPt(dataFiltro) + ')';
         } else if (dataFiltro === ontemIso) {
@@ -2021,8 +2293,13 @@
       }
 
       const linhasFiltradas = cacheConferencia.linhas.filter(l => {
-        if (!dataFiltro) return true;
-        return l.dataIso === dataFiltro;
+        if (!dataFiltro) {
+          if (!appState.semanaAtual) return true;
+          const sLinha = String(l.semana || '').toUpperCase().trim();
+          const sAtual = String(appState.semanaAtual || '').toUpperCase().trim();
+          return sLinha === sAtual;
+        }
+        return (l.dataIso && l.dataIso === dataFiltro) || (l.data && l.data === dataPtFiltro);
       });
 
       const comandas = {};
