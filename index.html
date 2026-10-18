@@ -37,7 +37,7 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
     html, body {
-      overscroll-behavior-y: contain;
+      -webkit-overflow-scrolling: touch;
     }
     body { background-color: #f1f5f9; color: var(--dark); padding-bottom: 40px; }
 
@@ -701,10 +701,14 @@
         <div id="barraFiltroDataConf" style="display: none; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; background: #f8fafc; border: 1px solid var(--gray-border); padding: 10px 14px; border-radius: 8px; margin-bottom: 16px;">
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             <label for="confFiltroData" style="font-weight: 600; font-size: 13px; color: var(--dark); margin: 0;">&#128197; Data do Caixa:</label>
-            <input type="date" id="confFiltroData" style="padding: 6px 10px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 13px;" onchange="aplicarFiltroDataConferencia()">
+            <input type="date" id="confFiltroData" style="padding: 6px 10px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 13px; background: #fff;" onchange="definirFiltroDataConf('personalizada')">
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('hoje')">Hoje</button>
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('ontem')">Ontem</button>
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('semana')">Toda a Semana</button>
+            <select id="confFiltroSemana" style="padding: 5px 8px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 12px; background: #fff; width: auto;" onchange="selecionarSemanaConferencia(this.value)">
+              <option value="">Semana Atual</option>
+            </select>
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="carregarConferencia(true)" title="Recarregar dados da planilha">&#128260; Atualizar</button>
           </div>
           <div id="lblStatusFiltroConf" style="font-size: 12px; font-weight: bold; color: var(--primary);">
             Exibindo pagamentos de: Hoje
@@ -1991,6 +1995,9 @@
       if (abaExtrato && abaExtrato.style.display !== 'none') {
         aplicarModoExtrato();
       }
+      if (typeof atualizarVisibilidadeBarraCaixa === 'function') {
+        atualizarVisibilidadeBarraCaixa();
+      }
       if (typeof aplicarFiltroDataConferencia === 'function') {
         const abaConf = document.getElementById('aba-conferencia');
         if (abaConf && abaConf.style.display !== 'none') {
@@ -2180,6 +2187,52 @@
       return isoStr;
     }
 
+    function atualizarVisibilidadeBarraCaixa() {
+      const barraFiltro = document.getElementById('barraFiltroDataConf');
+      const barraHoje = document.getElementById('barraInfoCaixaHoje');
+      const thConf = document.getElementById('thConfCaixa');
+      const lblDataHoje = document.getElementById('lblDataCaixaHoje');
+      const filtroInput = document.getElementById('confFiltroData');
+      const hojeIso = getHojeIso();
+
+      if (appState.modoGerencial) {
+        if (barraFiltro) barraFiltro.style.display = 'flex';
+        if (barraHoje) barraHoje.style.display = 'none';
+        if (thConf) thConf.style.display = 'table-cell';
+      } else {
+        if (barraFiltro) barraFiltro.style.display = 'none';
+        if (barraHoje) barraHoje.style.display = 'flex';
+        if (lblDataHoje) lblDataHoje.innerText = formatarDataPt(hojeIso);
+        if (thConf) thConf.style.display = 'none';
+        if (filtroInput) filtroInput.value = hojeIso;
+      }
+    }
+
+    function popularSelectSemanaConferencia() {
+      const sel = document.getElementById('confFiltroSemana');
+      if (!sel) return;
+      const semAtual = appState.semanaAtual || 'S43';
+      const valAtual = sel.value || semAtual;
+      sel.innerHTML = '<option value="TODAS">&#128197; Todas as Semanas</option>';
+      for (let i = 1; i <= 53; i++) {
+        let opt = document.createElement('option');
+        opt.value = 'S' + i;
+        opt.text = 'Semana S' + i + (('S' + i) === semAtual ? ' (Atual)' : '');
+        if (opt.value === valAtual) opt.selected = true;
+        sel.add(opt);
+      }
+    }
+
+    function selecionarSemanaConferencia(sem) {
+      const filtroInput = document.getElementById('confFiltroData');
+      if (filtroInput) filtroInput.value = '';
+      if (!cacheConferencia || !cacheConferencia.linhas) {
+        carregarConferencia();
+      } else {
+        aplicarFiltroDataConferencia();
+      }
+    }
+
     function definirFiltroDataConf(modo) {
       const filtroInput = document.getElementById('confFiltroData');
       if (!filtroInput) return;
@@ -2229,7 +2282,21 @@
       return res;
     }
 
-    function carregarConferencia() {
+    function carregarConferencia(forcarRecarregar) {
+      atualizarVisibilidadeBarraCaixa();
+      popularSelectSemanaConferencia();
+
+      if (!forcarRecarregar && cacheConferencia && cacheConferencia.linhas && cacheConferencia.linhas.length > 0) {
+        aplicarFiltroDataConferencia();
+        return;
+      }
+
+      const tbody = document.getElementById('tabelaConferenciaCorpo');
+      if (tbody) {
+        const totalColunas = appState.modoGerencial ? 8 : 7;
+        tbody.innerHTML = '<tr><td colspan="' + totalColunas + '" style="text-align: center; color: var(--primary); padding: 25px;"><span style="font-size: 20px;">&#9203;</span> Carregando registros do caixa da planilha...</td></tr>';
+      }
+
       if (typeof google === 'undefined' || !google.script || !google.script.run) {
         console.log('google.script nao disponivel para carregarConferencia');
         return;
@@ -2241,7 +2308,7 @@
           if (filtroInput) {
             if (!appState.modoGerencial) {
               filtroInput.value = getHojeIso();
-            } else if (!filtroInput.value) {
+            } else if (!filtroInput.value && !document.getElementById('confFiltroSemana')?.value) {
               filtroInput.value = getHojeIso();
             }
           }
@@ -2252,37 +2319,23 @@
     }
 
     function aplicarFiltroDataConferencia() {
+      atualizarVisibilidadeBarraCaixa();
       if (!cacheConferencia || !cacheConferencia.linhas) return;
 
-      const barraFiltro = document.getElementById('barraFiltroDataConf');
-      const barraHoje = document.getElementById('barraInfoCaixaHoje');
-      const lblDataHoje = document.getElementById('lblDataCaixaHoje');
-      const thConf = document.getElementById('thConfCaixa');
       const filtroInput = document.getElementById('confFiltroData');
+      const filtroSemana = document.getElementById('confFiltroSemana');
       const hojeIso = getHojeIso();
       const ontemIso = getOntemIso();
-
-      // Ajuste visual exclusivo por modo: Gerencial vs Profissional/Balcao
-      if (appState.modoGerencial) {
-        if (barraFiltro) barraFiltro.style.display = 'flex';
-        if (barraHoje) barraHoje.style.display = 'none';
-        if (thConf) thConf.style.display = 'table-cell';
-      } else {
-        if (barraFiltro) barraFiltro.style.display = 'none';
-        if (barraHoje) barraHoje.style.display = 'flex';
-        if (lblDataHoje) lblDataHoje.innerText = formatarDataPt(hojeIso);
-        if (thConf) thConf.style.display = 'none';
-        if (filtroInput) filtroInput.value = hojeIso;
-      }
 
       // No Modo Balcao / Profissional, o filtro eh ESTRITAMENTE a data de hoje
       const dataFiltro = appState.modoGerencial ? (filtroInput ? filtroInput.value : hojeIso) : hojeIso;
       const dataPtFiltro = formatarDataPt(dataFiltro);
       const statusEl = document.getElementById('lblStatusFiltroConf');
+      const semFiltro = filtroSemana ? filtroSemana.value : (appState.semanaAtual || '');
 
       if (statusEl) {
         if (!dataFiltro) {
-          statusEl.innerText = 'Exibindo: Toda a Semana (' + (appState.semanaAtual || '') + ')';
+          statusEl.innerText = 'Exibindo: ' + (semFiltro === 'TODAS' ? 'Todas as Semanas' : ('Semana ' + semFiltro));
         } else if (dataFiltro === hojeIso) {
           statusEl.innerText = 'Exibindo: Hoje (' + formatarDataPt(dataFiltro) + ')';
         } else if (dataFiltro === ontemIso) {
@@ -2294,10 +2347,8 @@
 
       const linhasFiltradas = cacheConferencia.linhas.filter(l => {
         if (!dataFiltro) {
-          if (!appState.semanaAtual) return true;
-          const sLinha = String(l.semana || '').toUpperCase().trim();
-          const sAtual = String(appState.semanaAtual || '').toUpperCase().trim();
-          return sLinha === sAtual;
+          if (!semFiltro || semFiltro === 'TODAS') return true;
+          return normalizarSemana(l.semana) === normalizarSemana(semFiltro);
         }
         return (l.dataIso && l.dataIso === dataFiltro) || (l.data && l.data === dataPtFiltro);
       });

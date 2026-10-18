@@ -1,4 +1,4 @@
-const CACHE_NAME = 'rose-estetica-pwa-v2';
+const CACHE_NAME = 'rose-estetica-pwa-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -35,4 +35,5 @@ self.addEventListener('fetch', event => {
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
 });
+
 
