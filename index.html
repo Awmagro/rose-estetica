@@ -658,8 +658,8 @@
                     <th>Profissional</th>
                     <th style="text-align: center;">Atendimentos</th>
                     <th style="text-align: right;">Comiss&otilde;es R$</th>
-                    <th style="text-align: right;">Rateio Faxina</th>
-                    <th style="text-align: right;">L&iacute;quido a Pagar</th>
+                    <th style="text-align: right;">Rateio Faxina R$</th>
+                    <th style="text-align: right;">L&iacute;quido a Pagar R$</th>
                     <th style="text-align: center;">Status Pgto</th>
                     <th style="text-align: center;">A&ccedil;&atilde;o</th>
                   </tr>
@@ -679,7 +679,7 @@
                   <th>Profissional</th>
                   <th>Servi&ccedil;o</th>
                   <th>Pgto</th>
-                  <th style="text-align: right;">Comiss&atilde;o</th>
+                  <th style="text-align: right;">Comiss&atilde;o R$</th>
                 </tr>
               </thead>
               <tbody id="tabelaExtratoCorpo"></tbody>
@@ -887,6 +887,26 @@
       console.log('[PWA] Adaptador Google Apps Script inicializado em modo standalone HTTP API.');
     }
     // ======================================================================
+
+    function formatarNumeroPt(val) {
+      if (val === null || val === undefined || val === '') return '0,00';
+      let num;
+      if (typeof val === 'number') {
+        num = val;
+      } else {
+        let s = String(val).replace('R$', '').replace(/\s+/g, '');
+        if (s.indexOf(',') !== -1) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        }
+        num = parseFloat(s);
+      }
+      if (isNaN(num)) return '0,00';
+      return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatarMoedaPt(val) {
+      return 'R$ ' + formatarNumeroPt(val);
+    }
 
     const CHAVE_STORAGE_AUTH = 'rose_estetica_auth_v1';
 
@@ -1337,7 +1357,7 @@
             <p>${descServicos}</p>
           </div>
           <div class="aberta-total">
-            R$ ${c.total.toFixed(2)}
+            ${formatarMoedaPt(c.total)}
           </div>
         `;
         card.onclick = () => carregarComandaNaTela(c);
@@ -1423,12 +1443,12 @@
         tr.innerHTML = `
           <td><strong>${it.profissional}</strong></td>
           <td>${it.descricao || 'Atendimento'}</td>
-          <td style="text-align: right;">R$ ${v.toFixed(2)}</td>
+          <td style="text-align: right; white-space: nowrap; font-weight: 600;">${formatarNumeroPt(v)}</td>
         `;
         tbody.appendChild(tr);
       });
 
-      lblTotal.innerText = 'R$ ' + total.toFixed(2);
+      lblTotal.innerText = formatarMoedaPt(total);
       aoMudarValoresPagamento();
     }
 
@@ -1471,8 +1491,8 @@
       const cred = parseValorPt(document.getElementById('pgValorCredito').value);
       const totalRecebido = din + pix + deb + cred;
 
-      document.getElementById('lblResumoTotalComanda').innerText = 'R$ ' + totalNum.toFixed(2).replace('.', ',');
-      document.getElementById('lblResumoTotalInformado').innerText = 'R$ ' + totalRecebido.toFixed(2).replace('.', ',');
+      document.getElementById('lblResumoTotalComanda').innerText = formatarMoedaPt(totalNum);
+      document.getElementById('lblResumoTotalInformado').innerText = formatarMoedaPt(totalRecebido);
 
       const statusEl = document.getElementById('lblStatusPagamento');
       const trocoEl = document.getElementById('lblValorTrocoDevolver');
@@ -1480,7 +1500,7 @@
       if (totalNum <= 0) {
         statusEl.innerText = 'Adicione servi\u00e7os \u00e0 comanda';
         statusEl.style.color = 'var(--gray-text)';
-        trocoEl.innerText = 'R$ 0,00';
+        trocoEl.innerText = formatarMoedaPt(0);
         return;
       }
 
@@ -1489,21 +1509,21 @@
       if (totalRecebido <= 0) {
         statusEl.innerText = 'Selecione ou digite o pagamento';
         statusEl.style.color = 'var(--warning-dark)';
-        trocoEl.innerText = 'R$ 0,00';
+        trocoEl.innerText = formatarMoedaPt(0);
       } else if (dif < 0) {
         const falta = Math.abs(dif);
-        statusEl.innerText = '\u26a0\ufe0f Falta R$ ' + falta.toFixed(2).replace('.', ',');
+        statusEl.innerText = '\u26a0\ufe0f Falta ' + formatarMoedaPt(falta);
         statusEl.style.color = 'var(--warning-dark)';
-        trocoEl.innerText = 'R$ 0,00';
+        trocoEl.innerText = formatarMoedaPt(0);
       } else if (dif === 0) {
-        statusEl.innerText = '\u2705 Pagamento completo (R$ ' + totalNum.toFixed(2).replace('.', ',') + ')';
+        statusEl.innerText = '\u2705 Pagamento completo (' + formatarMoedaPt(totalNum) + ')';
         statusEl.style.color = 'var(--success)';
-        trocoEl.innerText = 'R$ 0,00';
+        trocoEl.innerText = formatarMoedaPt(0);
       } else {
         const troco = dif;
-        statusEl.innerText = '\u2705 Pagamento completo (Troco: R$ ' + troco.toFixed(2).replace('.', ',') + ')';
+        statusEl.innerText = '\u2705 Pagamento completo (Troco: ' + formatarMoedaPt(troco) + ')';
         statusEl.style.color = 'var(--success)';
-        trocoEl.innerText = 'R$ ' + troco.toFixed(2).replace('.', ',');
+        trocoEl.innerText = formatarMoedaPt(troco);
       }
     }
 
@@ -1557,7 +1577,7 @@
 
         const dif = Math.round((totalRecebido - totalComandaBase) * 100) / 100;
         if (dif < 0) {
-          mostrarAlerta('O valor informado (R$ ' + totalRecebido.toFixed(2).replace('.', ',') + ') &eacute; menor que o total da comanda (R$ ' + totalComandaBase.toFixed(2).replace('.', ',') + ')! Falta R$ ' + Math.abs(dif).toFixed(2).replace('.', ','), false);
+          mostrarAlerta('O valor informado (' + formatarMoedaPt(totalRecebido) + ') &eacute; menor que o total da comanda (' + formatarMoedaPt(totalComandaBase) + ')! Falta ' + formatarMoedaPt(Math.abs(dif)), false);
           return;
         }
 
@@ -1672,13 +1692,13 @@
       document.getElementById('p_num').innerText = cupom.numComanda;
       document.getElementById('p_data').innerText = cupom.data;
       document.getElementById('p_cliente').innerText = cupom.cliente;
-      document.getElementById('p_total').innerText = String(cupom.total).replace('.', ',');
+      document.getElementById('p_total').innerText = formatarNumeroPt(cupom.total);
       document.getElementById('p_pg').innerText = cupom.formaPg;
 
       const rowTroco = document.getElementById('p_row_troco');
       if (cupom.troco && Number(cupom.troco) > 0) {
         rowTroco.style.display = 'flex';
-        document.getElementById('p_troco').innerText = String(cupom.troco).replace('.', ',');
+        document.getElementById('p_troco').innerText = formatarNumeroPt(cupom.troco);
       } else {
         rowTroco.style.display = 'none';
       }
@@ -1688,7 +1708,7 @@
         htmlItens += `
           <div class="cupom-item">
             <span>${it.servico} (${it.profissional})</span>
-            <span>R$ ${String(it.valor).replace('.', ',')}</span>
+            <span>${formatarNumeroPt(it.valor)}</span>
           </div>
         `;
       });
@@ -2060,9 +2080,9 @@
 
     function enviarWhatsAppComprovante(prof, sem, comissao, faxina, liquido) {
       const msg = 'Ol\u00e1 ' + prof + '! Segue o demonstrativo de comiss\u00f5es da ' + sem + ' no Rose Est\u00e9tica:\n\n' +
-        '\u2022 Total Comiss\u00f5es: R$ ' + comissao.replace('.', ',') + '\n' +
-        '\u2022 Rateio Faxina: - R$ ' + faxina.replace('.', ',') + '\n' +
-        '\u2022 \u2705 L\u00edquido Pago: R$ ' + liquido.replace('.', ',') + '\n\n' +
+        '\u2022 Total Comiss\u00f5es: ' + formatarMoedaPt(comissao) + '\n' +
+        '\u2022 Rateio Faxina: - ' + formatarMoedaPt(faxina) + '\n' +
+        '\u2022 \u2705 L\u00edquido Pago: ' + formatarMoedaPt(liquido) + '\n\n' +
         'Comiss\u00f5es quitadas com sucesso. Muito obrigado pelo seu trabalho!';
       const url = ['https:', '', 'api.whatsapp.com', 'send?text=' + encodeURIComponent(msg)].join('/');
       window.open(url, '_blank');
@@ -2086,10 +2106,10 @@
           const elLiquido = document.getElementById('kpiLiquido');
           const elFaxina = document.getElementById('kpiFaxina');
 
-          if (elBruto) elBruto.innerText = 'R$ ' + String(res.totalBruto || '0,00').replace('.', ',');
-          if (elComissao) elComissao.innerText = 'R$ ' + String(res.totalComissao || '0,00').replace('.', ',');
-          if (elLiquido) elLiquido.innerText = 'R$ ' + String(res.liquidoAPagar || '0,00').replace('.', ',');
-          if (elFaxina) elFaxina.innerText = '- R$ ' + String(res.taxaFaxina || '30,00').replace('.', ',');
+          if (elBruto) elBruto.innerText = formatarMoedaPt(res.totalBruto);
+          if (elComissao) elComissao.innerText = formatarMoedaPt(res.totalComissao);
+          if (elLiquido) elLiquido.innerText = formatarMoedaPt(res.liquidoAPagar);
+          if (elFaxina) elFaxina.innerText = '- ' + formatarMoedaPt(res.taxaFaxina || 30);
 
           const cardFaturado = document.getElementById('cardKpiTotalFaturado');
           if (cardFaturado) {
@@ -2124,9 +2144,9 @@
                 tr.innerHTML = `
                   <td><strong>${rp.profissional}</strong></td>
                   <td style="text-align: center;">${rp.atendimentos}</td>
-                  <td style="text-align: right;">R$ ${String(rp.totalComissao).replace('.', ',')}</td>
-                  <td style="text-align: right; color: var(--warning-dark);">- R$ ${String(rp.rateioFaxina).replace('.', ',')}</td>
-                  <td style="text-align: right; font-weight: bold; color: var(--primary);">R$ ${String(rp.liquidoAPagar).replace('.', ',')}</td>
+                  <td style="text-align: right; white-space: nowrap; font-weight: 600;">${formatarNumeroPt(rp.totalComissao)}</td>
+                  <td style="text-align: right; white-space: nowrap; color: var(--warning-dark);">- ${formatarNumeroPt(rp.rateioFaxina)}</td>
+                  <td style="text-align: right; white-space: nowrap; font-weight: bold; color: var(--primary);">${formatarNumeroPt(rp.liquidoAPagar)}</td>
                   <td style="text-align: center;">${statusBadge}</td>
                   <td style="text-align: center;">${btnAcao}</td>
                 `;
@@ -2154,7 +2174,7 @@
               <td>${l.profissional}</td>
               <td>${l.descricao}</td>
               <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
-              <td style="text-align: right; color: var(--success); font-weight: bold;">R$ ${String(l.comissao).replace('.', ',')}</td>
+              <td style="text-align: right; white-space: nowrap; color: var(--success); font-weight: bold;">${formatarNumeroPt(l.comissao)}</td>
             `;
             tbody.appendChild(tr);
           });
@@ -2354,12 +2374,12 @@
       const elCred = document.getElementById('kpiPgCredito');
       const elTot = document.getElementById('kpiPgTotal');
 
-      if (elDin) elDin.innerText = 'R$ ' + totais.dinheiro.toFixed(2).replace('.', ',');
-      if (elTroco) elTroco.innerText = 'Troco: R$ ' + totais.troco.toFixed(2).replace('.', ',');
-      if (elPix) elPix.innerText = 'R$ ' + totais.pix.toFixed(2).replace('.', ',');
-      if (elDeb) elDeb.innerText = 'R$ ' + totais.debito.toFixed(2).replace('.', ',');
-      if (elCred) elCred.innerText = 'R$ ' + totais.credito.toFixed(2).replace('.', ',');
-      if (elTot) elTot.innerText = 'R$ ' + totais.total.toFixed(2).replace('.', ',');
+      if (elDin) elDin.innerText = formatarMoedaPt(totais.dinheiro);
+      if (elTroco) elTroco.innerText = 'Troco: ' + formatarMoedaPt(totais.troco);
+      if (elPix) elPix.innerText = formatarMoedaPt(totais.pix);
+      if (elDeb) elDeb.innerText = formatarMoedaPt(totais.debito);
+      if (elCred) elCred.innerText = formatarMoedaPt(totais.credito);
+      if (elTot) elTot.innerText = formatarMoedaPt(totais.total);
 
       const tbody = document.getElementById('tabelaConferenciaCorpo');
       if (!tbody) return;
@@ -2374,7 +2394,7 @@
 
       linhasFiltradas.forEach(l => {
         let tr = document.createElement('tr');
-        let trocoTxt = (Number(l.troco) > 0) ? ('R$ ' + String(l.troco).replace('.', ',')) : '-';
+        let trocoTxt = (Number(l.troco) > 0) ? formatarNumeroPt(l.troco) : '-';
         
         // A coluna com checkbox de confirmacao so aparece no Modo Gerencial!
         const colConf = appState.modoGerencial
@@ -2388,8 +2408,8 @@
           <td>${l.cliente}</td>
           <td>${l.profissional}</td>
           <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
-          <td style="text-align: right;"><strong>R$ ${String(l.valor).replace('.', ',')}</strong></td>
-          <td style="text-align: right; color: var(--secondary-dark);">${trocoTxt}</td>
+          <td style="text-align: right; white-space: nowrap; font-weight: bold;">${formatarNumeroPt(l.valor)}</td>
+          <td style="text-align: right; white-space: nowrap; color: var(--secondary-dark);">${trocoTxt}</td>
         `;
         tbody.appendChild(tr);
       });
