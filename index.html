@@ -679,6 +679,7 @@
                   <th>Profissional</th>
                   <th>Serviço</th>
                   <th>Pgto</th>
+                  <th style="text-align: right;">Valor R$</th>
                   <th style="text-align: right;">Comissão R$</th>
                 </tr>
               </thead>
@@ -2207,7 +2208,7 @@
           tbody.innerHTML = '';
 
           if (!res.linhas || res.linhas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--success); padding: 18px; font-weight: 600;">&#127881; Nenhuma comissão pendente de pagamento no momento! Todas as semanas estão quitadas.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--success); padding: 18px; font-weight: 600;">&#127881; Nenhuma comissão pendente de pagamento no momento! Todas as semanas estão quitadas.</td></tr>';
             return;
           }
 
@@ -2221,6 +2222,7 @@
               <td>${l.profissional}</td>
               <td>${l.descricao}</td>
               <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
+              <td style="text-align: right; white-space: nowrap; font-weight: 600;">${formatarNumeroPt(l.valor)}</td>
               <td style="text-align: right; white-space: nowrap; color: var(--success); font-weight: bold;">${formatarNumeroPt(l.comissao)}</td>
             `;
             tbody.appendChild(tr);
