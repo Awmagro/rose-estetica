@@ -592,9 +592,14 @@
                 Extrato Individual: <strong id="txtProfLogada" style="font-size: 14px; color: #145a32;"></strong>
               </span>
             </div>
+          <div style="display: flex; gap: 6px;">
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; background: #fff;" onclick="abrirModalTrocarSenha()">
+              &#128273; Trocar Senha
+            </button>
             <button type="button" class="btn btn-outline" style="padding: 5px 12px; font-size: 12px; background: #fff; color: var(--dark);" onclick="sairExtratoProfissional()">
               &#128274; Sair / Bloquear Extrato
             </button>
+          </div>
           </div>
 
           <div class="card-title">Extrato Semanal de Atendimentos</div>
@@ -793,6 +798,80 @@
   </div>
 
 
+  <!-- MODAL DE PERFIL / OPCOES DO USUARIO (AO CLICAR NO NOME NO TOPO) -->
+  <div id="modalPerfilUsuario" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px 20px; max-width: 320px; width: 90%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); text-align: center; font-family: 'Inter', sans-serif;">
+      <div style="font-size: 36px; margin-bottom: 6px;">&#128100;</div>
+      <h3 style="color: var(--primary); font-size: 18px; margin-bottom: 4px; font-weight: 700;" id="lblPerfilNomeUsuario">Sua Conta</h3>
+      <p style="font-size: 12px; color: var(--gray-text); margin-bottom: 18px;" id="lblPerfilTipoUsuario">Sessão ativa neste aparelho</p>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+        <button type="button" class="btn btn-outline" style="padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: var(--primary); color: var(--primary);" onclick="abrirModalTrocarSenha()">
+          <span>&#128273;</span> Trocar Senha
+        </button>
+        <button type="button" class="btn btn-outline" style="padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: #fca5a5; color: #dc2626; background: #fff5f5;" onclick="fecharModalPerfilUsuario(); fazerLogout()">
+          <span>&#128274;</span> Sair da Conta
+        </button>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-block" style="padding: 8px; font-size: 13px;" onclick="fecharModalPerfilUsuario()">Voltar</button>
+    </div>
+  </div>
+
+
+  <!-- MODAL DE TROCA DE SENHA / PIN -->
+  <div id="modalTrocarSenha" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; border-radius: 16px; padding: 24px 20px; max-width: 340px; width: 92%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif;">
+      <div style="text-align: center; font-size: 32px; margin-bottom: 6px;">&#128273;</div>
+      <h3 style="color: var(--primary); font-size: 18px; margin-bottom: 4px; font-weight: 700; text-align: center;">Trocar Senha de Acesso</h3>
+      <p style="font-size: 12px; color: var(--gray-text); margin-bottom: 16px; text-align: center;">
+        A nova senha passará a valer imediatamente no aplicativo e na planilha.
+      </p>
+
+      <!-- Selecao de Usuario (Apenas para Gerencial) -->
+      <div id="boxSelProfTrocaSenha" style="display: none; margin-bottom: 12px; text-align: left;">
+        <label for="selProfTrocaSenha" style="font-size: 12px; font-weight: 700; color: var(--dark); display: block; margin-bottom: 4px;">Alterar senha de:</label>
+        <select id="selProfTrocaSenha" style="width: 100%; padding: 8px 10px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 13px; background: #fff;" onchange="aoMudarProfTrocaSenha()">
+        </select>
+        <div id="dicaRedefinicaoGerencial" style="display: none; font-size: 11px; color: #166534; background: #dcfce7; padding: 6px 8px; border-radius: 6px; margin-top: 6px;">
+          &#9432; Redefinição gerencial: a senha antiga não é necessária.
+        </div>
+      </div>
+
+      <!-- Nome da Profissional (Fixo quando em modo individual) -->
+      <div id="boxNomeFixoTrocaSenha" style="display: none; margin-bottom: 12px; text-align: left; background: #f8fafc; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--gray-border);">
+        <span style="font-size: 12px; color: var(--gray-text);">Profissional:</span>
+        <strong id="lblNomeFixoTrocaSenha" style="font-size: 14px; color: var(--primary); display: block;">-</strong>
+      </div>
+
+      <!-- Campo Senha Atual -->
+      <div id="boxSenhaAtualTroca" class="form-group" style="margin-bottom: 12px; text-align: left;">
+        <label for="inputSenhaAtualTroca" style="font-size: 12px; font-weight: 700; color: var(--dark); display: block; margin-bottom: 4px;">Senha / PIN Atual:</label>
+        <input type="password" id="inputSenhaAtualTroca" inputmode="numeric" maxlength="6" placeholder="****" style="width: 100%; font-size: 20px; text-align: center; letter-spacing: 6px; padding: 8px; border: 1px solid var(--gray-border); border-radius: 6px; outline: none; box-sizing: border-box;">
+      </div>
+
+      <!-- Campo Nova Senha -->
+      <div class="form-group" style="margin-bottom: 12px; text-align: left;">
+        <label for="inputNovaSenhaTroca" style="font-size: 12px; font-weight: 700; color: var(--dark); display: block; margin-bottom: 4px;">Nova Senha (4 a 6 números):</label>
+        <input type="password" id="inputNovaSenhaTroca" inputmode="numeric" maxlength="6" placeholder="****" style="width: 100%; font-size: 20px; text-align: center; letter-spacing: 6px; padding: 8px; border: 2px solid var(--primary); border-radius: 6px; outline: none; box-sizing: border-box;">
+      </div>
+
+      <!-- Campo Confirmar Nova Senha -->
+      <div class="form-group" style="margin-bottom: 14px; text-align: left;">
+        <label for="inputConfNovaSenhaTroca" style="font-size: 12px; font-weight: 700; color: var(--dark); display: block; margin-bottom: 4px;">Confirmar Nova Senha:</label>
+        <input type="password" id="inputConfNovaSenhaTroca" inputmode="numeric" maxlength="6" placeholder="****" style="width: 100%; font-size: 20px; text-align: center; letter-spacing: 6px; padding: 8px; border: 1px solid var(--gray-border); border-radius: 6px; outline: none; box-sizing: border-box;">
+      </div>
+
+      <div id="msgStatusTrocaSenha" style="display: none; font-size: 12px; margin-bottom: 12px; text-align: center; font-weight: bold;"></div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 13px;" onclick="fecharModalTrocarSenha()">Cancelar</button>
+        <button type="button" id="btnSalvarNovaSenha" class="btn btn-primary" style="flex: 1; padding: 10px; font-size: 13px; font-weight: 700;" onclick="executarSalvarNovaSenha()">Salvar</button>
+      </div>
+    </div>
+  </div>
+
+
   <!-- MODAL DE CANCELAMENTO / EXCLUSAO DE COMANDA (EXCLUSIVO GERENCIAL) -->
   <div id="modalCancelarComanda" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
     <div style="background: #ffffff; border-radius: 14px; padding: 22px; max-width: 380px; width: 92%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif;">
@@ -883,6 +962,7 @@
         else if (metodo === 'confirmarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarComanda') { payload.numComanda = args[0]; payload.pin = args[1]; payload.motivo = args[2]; }
+        else if (metodo === 'alterarPinAcesso') { payload.dados = args[0]; }
 
         fetch(API_URL, {
           method: 'POST',
@@ -1829,22 +1909,250 @@
     }
 
     function clicarAlternarModo() {
+      abrirModalPerfilUsuario();
+    }
+
+    function abrirModalPerfilUsuario() {
+      const modal = document.getElementById('modalPerfilUsuario');
+      const lblNome = document.getElementById('lblPerfilNomeUsuario');
+      const lblTipo = document.getElementById('lblPerfilTipoUsuario');
+
       if (appState.modoGerencial) {
-        if (confirm('Deseja sair do Modo Gerencial e voltar ao modo Balcão?')) {
-          ativarModoGerencial(false);
-          mostrarAlerta('Modo Balcão ativado.', true);
-        }
+        if (lblNome) lblNome.innerText = '👑 Modo Gerencial (Rose)';
+        if (lblTipo) lblTipo.innerText = 'Acesso administrativo total da clínica';
+      } else if (appState.profissionalLogada) {
+        if (lblNome) lblNome.innerText = '👤 ' + appState.profissionalLogada;
+        if (lblTipo) lblTipo.innerText = 'Profissional • Acesso Balcão';
       } else {
-        const modal = document.getElementById('modalPin');
-        const input = document.getElementById('inputPinGerencial');
-        const erro = document.getElementById('erroPinModal');
-        if (erro) erro.style.display = 'none';
-        if (input) input.value = '';
-        if (modal) {
-          modal.style.display = 'flex';
-          setTimeout(() => { if (input) input.focus(); }, 150);
-        }
+        if (lblNome) lblNome.innerText = '🏪 Balcão Geral';
+        if (lblTipo) lblTipo.innerText = 'Sessão compartilhada';
       }
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function fecharModalPerfilUsuario() {
+      const modal = document.getElementById('modalPerfilUsuario');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function abrirModalTrocarSenha() {
+      fecharModalPerfilUsuario();
+      const modal = document.getElementById('modalTrocarSenha');
+      const boxSel = document.getElementById('boxSelProfTrocaSenha');
+      const selProf = document.getElementById('selProfTrocaSenha');
+      const boxFixo = document.getElementById('boxNomeFixoTrocaSenha');
+      const lblFixo = document.getElementById('lblNomeFixoTrocaSenha');
+      const boxAtual = document.getElementById('boxSenhaAtualTroca');
+      const inpAtual = document.getElementById('inputSenhaAtualTroca');
+      const inpNova = document.getElementById('inputNovaSenhaTroca');
+      const inpConf = document.getElementById('inputConfNovaSenhaTroca');
+      const msg = document.getElementById('msgStatusTrocaSenha');
+      const btn = document.getElementById('btnSalvarNovaSenha');
+
+      if (inpAtual) inpAtual.value = '';
+      if (inpNova) inpNova.value = '';
+      if (inpConf) inpConf.value = '';
+      if (msg) msg.style.display = 'none';
+      if (btn) {
+        btn.disabled = false;
+        btn.innerText = 'Salvar';
+      }
+
+      if (appState.modoGerencial) {
+        // Gerencial: exibe select para trocar a senha da Rose ou redefinir a de qualquer profissional
+        if (boxSel) boxSel.style.display = 'block';
+        if (boxFixo) boxFixo.style.display = 'none';
+
+        if (selProf) {
+          selProf.innerHTML = '';
+          const optRose = document.createElement('option');
+          optRose.value = 'Rose';
+          optRose.innerText = 'Minha Senha (Rose)';
+          selProf.appendChild(optRose);
+
+          (appState.profissionais || []).forEach(p => {
+            if (p.nome && p.nome.toLowerCase() !== 'rose') {
+              const opt = document.createElement('option');
+              opt.value = p.nome;
+              opt.innerText = p.nome + ' (Redefinir senha)';
+              selProf.appendChild(opt);
+            }
+          });
+        }
+        aoMudarProfTrocaSenha();
+      } else {
+        // Profissional comum: exibe o nome dela fixo e exige senha atual
+        if (boxSel) boxSel.style.display = 'none';
+        if (boxFixo) boxFixo.style.display = 'block';
+        const nomeLogada = appState.profissionalLogada || 'Profissional';
+        if (lblFixo) lblFixo.innerText = nomeLogada;
+        if (boxAtual) boxAtual.style.display = 'block';
+        const dica = document.getElementById('dicaRedefinicaoGerencial');
+        if (dica) dica.style.display = 'none';
+      }
+
+      if (modal) modal.style.display = 'flex';
+      setTimeout(() => {
+        if (boxAtual && boxAtual.style.display !== 'none' && inpAtual) {
+          inpAtual.focus();
+        } else if (inpNova) {
+          inpNova.focus();
+        }
+      }, 150);
+    }
+
+    function aoMudarProfTrocaSenha() {
+      const selProf = document.getElementById('selProfTrocaSenha');
+      const boxAtual = document.getElementById('boxSenhaAtualTroca');
+      const dica = document.getElementById('dicaRedefinicaoGerencial');
+      const val = selProf ? selProf.value : 'Rose';
+
+      if (val.toLowerCase() === 'rose') {
+        if (boxAtual) boxAtual.style.display = 'block';
+        if (dica) dica.style.display = 'none';
+      } else {
+        // Redefinicao gerencial de outra profissional: nao precisa da senha antiga
+        if (boxAtual) boxAtual.style.display = 'none';
+        if (dica) dica.style.display = 'block';
+      }
+    }
+
+    function fecharModalTrocarSenha() {
+      const modal = document.getElementById('modalTrocarSenha');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function executarSalvarNovaSenha() {
+      const inpAtual = document.getElementById('inputSenhaAtualTroca');
+      const inpNova = document.getElementById('inputNovaSenhaTroca');
+      const inpConf = document.getElementById('inputConfNovaSenhaTroca');
+      const msg = document.getElementById('msgStatusTrocaSenha');
+      const btn = document.getElementById('btnSalvarNovaSenha');
+      const selProf = document.getElementById('selProfTrocaSenha');
+
+      let profNome = '';
+      let exigeAtual = true;
+
+      if (appState.modoGerencial) {
+        profNome = selProf ? selProf.value : 'Rose';
+        exigeAtual = (profNome.toLowerCase() === 'rose');
+      } else {
+        profNome = appState.profissionalLogada || '';
+        exigeAtual = true;
+      }
+
+      const senhaAtual = inpAtual ? inpAtual.value.trim() : '';
+      const novaSenha = inpNova ? inpNova.value.trim() : '';
+      const confSenha = inpConf ? inpConf.value.trim() : '';
+
+      if (exigeAtual && !senhaAtual) {
+        if (msg) {
+          msg.innerText = 'Digite a senha atual.';
+          msg.style.color = 'var(--danger)';
+          msg.style.display = 'block';
+        }
+        if (inpAtual) inpAtual.focus();
+        return;
+      }
+
+      if (!novaSenha || novaSenha.length < 4 || !/^\d+$/.test(novaSenha)) {
+        if (msg) {
+          msg.innerText = 'A nova senha deve conter no mínimo 4 números.';
+          msg.style.color = 'var(--danger)';
+          msg.style.display = 'block';
+        }
+        if (inpNova) inpNova.focus();
+        return;
+      }
+
+      if (novaSenha === '8665') {
+        if (msg) {
+          msg.innerText = 'Este PIN é reservado pelo sistema. Escolha outro.';
+          msg.style.color = 'var(--danger)';
+          msg.style.display = 'block';
+        }
+        if (inpNova) inpNova.focus();
+        return;
+      }
+
+      if (novaSenha !== confSenha) {
+        if (msg) {
+          msg.innerText = 'A nova senha e a confirmação não coincidem.';
+          msg.style.color = 'var(--danger)';
+          msg.style.display = 'block';
+        }
+        if (inpConf) inpConf.focus();
+        return;
+      }
+
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Salvando...';
+      }
+      if (msg) {
+        msg.innerText = 'Salvando nova senha na planilha...';
+        msg.style.color = 'var(--primary)';
+        msg.style.display = 'block';
+      }
+
+      const dadosEnvio = {
+        profissional: profNome,
+        pinAtual: senhaAtual,
+        novoPin: novaSenha,
+        pinGerencial: appState.pinAutenticado || (appState.modoGerencial ? '8665' : '')
+      };
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        alert('google.script nao disponivel');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.status === 'sucesso') {
+            // Atualiza PIN em memoria
+            const prof = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === profNome.toLowerCase());
+            if (prof) prof.pin = res.novoPin;
+
+            // Se for a usuaria atualmente conectada, atualiza PIN de sessao
+            const ehUsuarioAtual = appState.modoGerencial ? (profNome.toLowerCase() === 'rose') : (profNome.toLowerCase() === (appState.profissionalLogada || '').toLowerCase());
+            if (ehUsuarioAtual) {
+              appState.pinAutenticado = res.novoPin;
+              const eraPermanente = !!(localStorage.getItem(CHAVE_STORAGE_AUTH));
+              if (appState.modoGerencial) {
+                salvarSessao('gerencial', 'Rose', eraPermanente);
+              } else {
+                salvarSessao('profissional', profNome, eraPermanente);
+              }
+            }
+
+            fecharModalTrocarSenha();
+            mostrarAlerta(res.mensagem || ('Senha de ' + profNome + ' alterada com sucesso!'), true);
+          } else {
+            if (msg) {
+              msg.innerText = (res && res.mensagem) ? res.mensagem : 'Erro ao alterar senha.';
+              msg.style.color = 'var(--danger)';
+              msg.style.display = 'block';
+            }
+            if (btn) {
+              btn.disabled = false;
+              btn.innerText = 'Salvar';
+            }
+          }
+        })
+        .withFailureHandler(err => {
+          if (msg) {
+            msg.innerText = 'Falha: ' + (err.message || err);
+            msg.style.color = 'var(--danger)';
+            msg.style.display = 'block';
+          }
+          if (btn) {
+            btn.disabled = false;
+            btn.innerText = 'Salvar';
+          }
+        })
+        .alterarPinAcesso(dadosEnvio);
     }
 
     function fecharModalPin() {
