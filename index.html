@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <base target="_top">
@@ -805,6 +805,17 @@
       <h3 style="color: var(--primary); font-size: 18px; margin-bottom: 4px; font-weight: 700;" id="lblPerfilNomeUsuario">Sua Conta</h3>
       <p style="font-size: 12px; color: var(--gray-text); margin-bottom: 18px;" id="lblPerfilTipoUsuario">Sessão ativa neste aparelho</p>
 
+      <!-- Configuracao de Preferencia de WhatsApp -->
+      <div id="boxConfigWhatsAppPerfil" style="margin-bottom: 14px; text-align: left; background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 8px; padding: 10px 12px;">
+        <label for="selPreferenciaWhatsAppPerfil" style="font-size: 11px; font-weight: 700; color: var(--dark); display: block; margin-bottom: 4px;">&#128242; WhatsApp de Comprovantes:</label>
+        <select id="selPreferenciaWhatsAppPerfil" style="width: 100%; padding: 8px; font-size: 12px; border: 1px solid var(--gray-border); border-radius: 6px; background: #fff;" onchange="aoMudarPreferenciaWhatsApp(this.value)">
+          <option value="perguntar">&#10067; Perguntar sempre ao enviar</option>
+          <option value="pessoal">&#128241; Abrir direto WhatsApp Pessoal</option>
+          <option value="business">&#128188; Abrir direto WhatsApp Business</option>
+        </select>
+        <span style="font-size: 10px; color: var(--gray-text); display: block; margin-top: 4px;">Configura qual aplicativo abre ao enviar recibos de comissão.</span>
+      </div>
+
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
         <button type="button" class="btn btn-outline" style="padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: var(--primary); color: var(--primary);" onclick="abrirModalTrocarSenha()">
           <span>&#128273;</span> Trocar Senha
@@ -815,6 +826,85 @@
       </div>
 
       <button type="button" class="btn btn-outline btn-block" style="padding: 8px; font-size: 13px;" onclick="fecharModalPerfilUsuario()">Voltar</button>
+    </div>
+  </div>
+
+
+  <!-- MODAL DE ESCOLHA DE WHATSAPP PARA ENVIO DE COMPROVANTE -->
+  <div id="modalEscolhaWhatsApp" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; border-radius: 16px; padding: 22px 18px; max-width: 360px; width: 92%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif;">
+      
+      <!-- Topo com icone e titulo -->
+      <div style="text-align: center; margin-bottom: 12px;">
+        <div style="font-size: 32px; margin-bottom: 4px;">&#128242;</div>
+        <h3 style="color: var(--primary); font-size: 17px; margin-bottom: 2px; font-weight: 700;">Enviar Comprovante</h3>
+        <p style="font-size: 12px; color: var(--gray-text); margin: 0;">
+          Escolha por onde deseja enviar o recibo:
+        </p>
+      </div>
+
+      <!-- Card com resumo do pagamento -->
+      <div style="background: #fdfefe; border: 1px solid var(--gray-border); border-left: 4px solid var(--success); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 12px; color: var(--gray-text);">Profissional:</span>
+          <strong id="lblWppProf" style="font-size: 13px; color: var(--dark);">-</strong>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+          <span style="font-size: 12px; color: var(--gray-text);">Semana de Ref.:</span>
+          <span id="lblWppSemana" class="badge" style="background: var(--purple-light); color: var(--primary); font-size: 11px; padding: 2px 6px; font-weight: bold;">-</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px dashed var(--gray-border); padding-top: 6px; margin-top: 4px;">
+          <span style="font-size: 12px; font-weight: 600; color: var(--dark);">Líquido Pago:</span>
+          <strong id="lblWppLiquido" style="font-size: 15px; color: var(--success); font-weight: bold;">R$ 0,00</strong>
+        </div>
+      </div>
+
+      <!-- Botoes de Acao -->
+      <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px;">
+        <!-- Botao WhatsApp Pessoal -->
+        <button type="button" class="btn" style="background: #25d366; color: #ffffff; padding: 11px 14px; font-size: 13px; font-weight: 700; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(37,211,102,0.3);" onclick="executarEnvioWpp('pessoal')">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">&#128241;</span>
+            <div style="text-align: left; line-height: 1.2;">
+              <div>WhatsApp Pessoal</div>
+              <small style="font-size: 10px; font-weight: normal; opacity: 0.95;">Contato direto das profissionais</small>
+            </div>
+          </div>
+          <span style="font-size: 14px;">&#10148;</span>
+        </button>
+
+        <!-- Botao WhatsApp Business -->
+        <button type="button" class="btn" style="background: #075e54; color: #ffffff; padding: 11px 14px; font-size: 13px; font-weight: 700; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 6px rgba(7,94,84,0.3);" onclick="executarEnvioWpp('business')">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 18px;">&#128188;</span>
+            <div style="text-align: left; line-height: 1.2;">
+              <div>WhatsApp Business</div>
+              <small style="font-size: 10px; font-weight: normal; opacity: 0.95;">Número oficial da clínica</small>
+            </div>
+          </div>
+          <span style="font-size: 14px;">&#10148;</span>
+        </button>
+
+        <!-- Botao Copiar Texto -->
+        <button type="button" class="btn btn-outline" style="padding: 9px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; border-color: var(--gray-border);" onclick="copiarTextoComprovante()">
+          <span>&#128203;</span> Copiar Texto do Demonstrativo
+        </button>
+
+        <!-- Botao Compartilhar Nativo (se suportado) -->
+        <button type="button" id="btnWppCompartilharNativo" class="btn btn-outline" style="padding: 9px 12px; font-size: 12px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 6px; border-color: var(--gray-border);" onclick="compartilharComprovanteNativo()">
+          <span>&#8599;&#65039;</span> Compartilhar (Outros Aplicativos)
+        </button>
+      </div>
+
+      <!-- Opcao Lembrar Escolha -->
+      <div style="background: #f8fafc; border: 1px solid var(--gray-border); border-radius: 6px; padding: 8px 10px; margin-bottom: 12px;">
+        <label style="display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--dark); cursor: pointer; margin: 0;">
+          <input type="checkbox" id="chkLembrarPreferenciaWpp" style="width: 16px; height: 16px; margin: 0; cursor: pointer;">
+          <span>Lembrar minha escolha neste aparelho (abrir direto)</span>
+        </label>
+      </div>
+
+      <button type="button" class="btn btn-outline btn-block" style="padding: 8px; font-size: 12px;" onclick="fecharModalEscolhaWhatsApp()">Cancelar</button>
     </div>
   </div>
 
@@ -1013,6 +1103,456 @@
     }
     // ======================================================================
 
+    function formatarNumeroPt(val) {
+      if (val === null || val === undefined || val === '') return '0,00';
+      let num;
+      if (typeof val === 'number') {
+        num = val;
+      } else {
+        let s = String(val).replace('R$', '').replace(/\s+/g, '');
+        if (s.indexOf(',') !== -1) {
+          s = s.replace(/\./g, '').replace(',', '.');
+        }
+        num = parseFloat(s);
+      }
+      if (isNaN(num)) return '0,00';
+      return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatarMoedaPt(val) {
+      return 'R$ ' + formatarNumeroPt(val);
+    }
+
+    const CHAVE_STORAGE_AUTH = 'rose_estetica_auth_v1';
+    const CHAVE_STORAGE_PROFS = 'rose_estetica_profs_cache_v1';
+
+    function carregarProfsStorage() {
+      try {
+        const c = localStorage.getItem(CHAVE_STORAGE_PROFS);
+        if (c) {
+          const lista = JSON.parse(c);
+          if (Array.isArray(lista) && lista.length > 0) return lista;
+        }
+      } catch (e) {}
+      return [
+        { nome: 'Paula' },
+        { nome: 'Taty' },
+        { nome: 'Fabiana' },
+        { nome: 'Mariana' },
+        { nome: 'Rose' }
+      ];
+    }
+
+    function salvarProfsStorage(lista) {
+      try {
+        if (Array.isArray(lista) && lista.length > 0) {
+          localStorage.setItem(CHAVE_STORAGE_PROFS, JSON.stringify(lista));
+        }
+      } catch (e) {}
+    }
+
+    let appState = {
+      profissionais: carregarProfsStorage(),
+      formasPagamento: [],
+      regrasDePara: [],
+      semanaAtual: 'S42',
+      proximaComanda: 4570,
+      comandasAbertas: [],
+      agendamentosHoje: [],
+      comandaAtualItens: [],
+      ultimoCupom: null,
+      modoGerencial: false,
+      profissionalLogada: null,
+      autenticado: false,
+      pinAutenticado: null
+    };
+
+    function salvarSessao(modo, nome, permanente) {
+      try {
+        const payload = {
+          autenticado: true,
+          modo: modo,
+          nome: nome || '',
+          pin: appState.pinAutenticado || '',
+          timestamp: Date.now()
+        };
+        sessionStorage.setItem(CHAVE_STORAGE_AUTH, JSON.stringify(payload));
+        if (permanente) {
+          localStorage.setItem(CHAVE_STORAGE_AUTH, JSON.stringify(payload));
+        } else {
+          localStorage.removeItem(CHAVE_STORAGE_AUTH);
+        }
+      } catch (e) {
+        console.warn('Erro ao salvar sessao:', e);
+      }
+    }
+
+    function limparSessao() {
+      try {
+        sessionStorage.removeItem(CHAVE_STORAGE_AUTH);
+        localStorage.removeItem(CHAVE_STORAGE_AUTH);
+      } catch (e) {
+        console.warn('Erro ao limpar sessao:', e);
+      }
+    }
+
+    function obterSessaoSalva() {
+      try {
+        const itemSession = sessionStorage.getItem(CHAVE_STORAGE_AUTH);
+        if (itemSession) return JSON.parse(itemSession);
+        const itemLocal = localStorage.getItem(CHAVE_STORAGE_AUTH);
+        if (itemLocal) return JSON.parse(itemLocal);
+      } catch (e) {
+        console.warn('Erro ao ler sessao:', e);
+      }
+      return null;
+    }
+
+    function exibirAppAutenticado(autenticado) {
+      const telaBloqueio = document.getElementById('telaLoginBloqueio');
+      const appPrincipal = document.getElementById('appPrincipal');
+
+      if (autenticado) {
+        if (telaBloqueio) telaBloqueio.style.display = 'none';
+        if (appPrincipal) appPrincipal.style.display = 'block';
+        if (appState.profissionalLogada) {
+          const selProf = document.getElementById('selProfissional');
+          if (selProf) selProf.value = appState.profissionalLogada;
+        }
+      } else {
+        if (telaBloqueio) telaBloqueio.style.display = 'flex';
+        if (appPrincipal) appPrincipal.style.display = 'none';
+        popularSelectLoginInicial();
+        setTimeout(() => {
+          const inp = document.getElementById('inputPinLoginInicial');
+          if (inp) {
+            inp.value = '';
+            inp.focus();
+          }
+        }, 150);
+      }
+    }
+
+    function popularSelectLoginInicial() {
+      const sel = document.getElementById('loginInicialProf');
+      if (!sel) return;
+      const valAtual = sel.value;
+      sel.innerHTML = '<option value="AUTO">&#128273; Identificação Automática pelo PIN</option>';
+      (appState.profissionais || []).forEach(p => {
+        let opt = document.createElement('option');
+        opt.value = p.nome;
+        opt.text = p.nome + (p.nome.toLowerCase() === 'rose' ? ' (Gerencial)' : '');
+        sel.add(opt);
+      });
+      if (valAtual) sel.value = valAtual;
+    }
+
+    function confirmarLoginInicial() {
+      const sel = document.getElementById('loginInicialProf');
+      const inp = document.getElementById('inputPinLoginInicial');
+      const erro = document.getElementById('erroLoginInicial');
+      const chkLembrar = document.getElementById('chkLembrarAcesso');
+      
+      const nomeEscolhido = sel ? sel.value : 'AUTO';
+      const pin = inp ? inp.value.trim() : '';
+
+      if (!pin) {
+        if (erro) {
+          erro.innerText = 'Por favor, digite seu PIN.';
+          erro.style.display = 'block';
+        }
+        if (inp) inp.focus();
+        return;
+      }
+
+      const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
+      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '';
+
+      // 1. PIN Gerencial Master (8665) ou Rose (PIN dinâmico)
+      if (pin === '8665' || (pinRose && pin === pinRose) || (nomeEscolhido.toLowerCase() === 'rose' && pinRose && pin === pinRose)) {
+        if (erro) erro.style.display = 'none';
+        appState.autenticado = true;
+        appState.modoGerencial = true;
+        appState.profissionalLogada = null;
+        appState.pinAutenticado = pin;
+        const lembrar = chkLembrar ? chkLembrar.checked : false;
+        salvarSessao('gerencial', 'Rose', lembrar);
+        exibirAppAutenticado(true);
+        atualizarVisualModo();
+        mostrarAlerta('&#9989; Acesso Gerencial ativado com sucesso!', true);
+        return;
+      }
+
+      // 2. PIN Individual de Profissional (estritamente dinâmico)
+      let profEncontrada = null;
+      if (nomeEscolhido && nomeEscolhido !== 'AUTO') {
+        profEncontrada = (appState.profissionais || []).find(p => {
+          const pinValido = String(p.pin || '').trim();
+          return pinValido && p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinValido === pin);
+        });
+      } else {
+        profEncontrada = (appState.profissionais || []).find(p => {
+          const pinValido = String(p.pin || '').trim();
+          return pinValido && (pinValido === pin);
+        });
+      }
+
+      if (profEncontrada) {
+        if (erro) erro.style.display = 'none';
+        appState.autenticado = true;
+        appState.modoGerencial = false;
+        appState.profissionalLogada = profEncontrada.nome;
+        const lembrar = chkLembrar ? chkLembrar.checked : false;
+        salvarSessao('profissional', profEncontrada.nome, lembrar);
+        exibirAppAutenticado(true);
+        atualizarVisualModo();
+        mostrarAlerta('&#128100; Olá, ' + profEncontrada.nome + '! Acesso liberado.', true);
+        return;
+      }
+
+      // 3. PIN incorreto
+      if (erro) {
+        erro.innerText = 'PIN não reconhecido! Tente novamente.';
+        erro.style.display = 'block';
+      }
+      if (inp) {
+        inp.value = '';
+        inp.focus();
+      }
+    }
+
+    function fazerLogout() {
+      const nomeUser = appState.modoGerencial ? 'Acesso Gerencial' : (appState.profissionalLogada || 'sua conta');
+      if (confirm('Deseja sair de ' + nomeUser + ' e bloquear o aplicativo neste aparelho?')) {
+        limparSessao();
+        appState.autenticado = false;
+        appState.modoGerencial = false;
+        appState.profissionalLogada = null;
+        exibirAppAutenticado(false);
+        atualizarVisualModo();
+        mostrarAlerta('Aplicativo bloqueado com sucesso.', true);
+      }
+    }
+
+    (function inicializarInterfaceImediata() {
+      try {
+        const d = new Date();
+        const ano = d.getFullYear();
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const dia = String(d.getDate()).padStart(2, '0');
+        const dataHojeStr = ano + '-' + mes + '-' + dia;
+        
+        const elData = document.getElementById('dataAtendimento');
+        if (elData) elData.value = dataHojeStr;
+
+        const primJan = new Date(ano, 0, 1);
+        const dias = Math.floor((d - primJan) / (24 * 60 * 60 * 1000));
+        const numSem = Math.ceil((dias + primJan.getDay() + 1) / 7);
+        appState.semanaAtual = 'S' + (numSem > 53 ? 53 : numSem);
+
+        const lblSem = document.getElementById('lblSemanaTopo');
+        if (lblSem) lblSem.innerText = 'Ref: ' + appState.semanaAtual;
+
+        const selSem = document.getElementById('extratoSemana');
+        if (selSem) selSem.value = appState.semanaAtual;
+
+        // Verifica sessao salva no localStorage (Acesso Rapido sem pedir senha repetida)
+        const sessaoSalva = obterSessaoSalva();
+        if (sessaoSalva && sessaoSalva.autenticado) {
+          appState.autenticado = true;
+          appState.pinAutenticado = sessaoSalva.pin || (sessaoSalva.modo === 'gerencial' ? '8665' : null);
+          if (sessaoSalva.modo === 'gerencial') {
+            appState.modoGerencial = true;
+            appState.profissionalLogada = null;
+          } else {
+            appState.modoGerencial = false;
+            appState.profissionalLogada = sessaoSalva.nome;
+          }
+          exibirAppAutenticado(true);
+        } else {
+          appState.autenticado = false;
+          appState.modoGerencial = false;
+          appState.profissionalLogada = null;
+          exibirAppAutenticado(false);
+        }
+
+        atualizarVisualModo();
+      } catch (eInit) {
+        console.error('Aviso inicializacao local:', eInit);
+      }
+    })();
+
+    function sincronizarComPlanilha() {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        console.log('Ambiente local ou google.script indisponivel no momento.');
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(inicializarApp)
+        .withFailureHandler(tratarErro)
+        .getDadosIniciais();
+
+      try {
+        google.script.run
+          .withSuccessHandler(function(agendamentos) {
+            if (agendamentos && agendamentos.length > 0) {
+              appState.agendamentosHoje = agendamentos;
+              renderizarAgendaHoje();
+            }
+          })
+          .obterAgendamentosHoje();
+      } catch (eCal) {
+        console.log('Aviso Calendar sync:', eCal);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', sincronizarComPlanilha);
+    } else {
+      sincronizarComPlanilha();
+    }
+
+    function inicializarApp(data) {
+      try {
+        if (!data) data = {};
+        if (data.status === 'erro' && data.erro) {
+          mostrarAlerta('Aviso da planilha: ' + data.erro, false);
+        }
+
+        if (data.regrasDePara && data.regrasDePara.length > 0) {
+          appState.regrasDePara = data.regrasDePara;
+        }
+        if (data.profissionais && data.profissionais.length > 0) {
+          appState.profissionais = data.profissionais;
+          salvarProfsStorage(data.profissionais);
+        }
+        if (data.semanaAtual) {
+          appState.semanaAtual = data.semanaAtual;
+          const lblSem = document.getElementById('lblSemanaTopo');
+          if (lblSem) lblSem.innerText = 'Ref: ' + appState.semanaAtual;
+          const selSem = document.getElementById('extratoSemana');
+          if (selSem) selSem.value = appState.semanaAtual;
+        }
+        if (data.proximaComanda) {
+          appState.proximaComanda = data.proximaComanda;
+          const inpNum = document.getElementById('numComanda');
+          if (inpNum) inpNum.value = appState.proximaComanda;
+        }
+        if (data.comandasAbertas) {
+          appState.comandasAbertas = data.comandasAbertas;
+          renderizarComandasAbertas();
+        }
+
+        popularSelectLoginProf();
+        popularSelectLoginInicial();
+
+        const selProf = document.getElementById('selProfissional');
+        if (selProf && appState.profissionais) {
+          selProf.innerHTML = '';
+          appState.profissionais.forEach(function(p) {
+            let opt = document.createElement('option');
+            opt.value = p.nome; opt.text = p.nome;
+            selProf.add(opt);
+          });
+          if (appState.profissionalLogada) {
+            selProf.value = appState.profissionalLogada;
+          }
+        }
+        popularSelectExtratoProf(appState.modoGerencial);
+
+        const lblSemana = document.getElementById('lblSemanaTopo');
+        if (lblSemana) {
+          lblSemana.title = 'Conectado com sucesso a planilha Google Sheets';
+        }
+      } catch (errInit) {
+        console.error('Erro ao sincronizar dados:', errInit);
+      }
+    }
+
+    function sincronizarAgendaGoogle() {
+      const dtEl = document.getElementById('dataAtendimento');
+      const dataRef = dtEl && dtEl.value ? dtEl.value : '';
+      mostrarAlerta('Buscando agendamentos na Google Agenda...', true);
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        mostrarAlerta('Ambiente local ou google.script indisponivel.', false);
+        return;
+      }
+      google.script.run
+        .withSuccessHandler(function(agendamentos) {
+          appState.agendamentosHoje = agendamentos || [];
+          renderizarAgendaHoje();
+          if (!agendamentos || agendamentos.length === 0) {
+            mostrarAlerta('Nenhum agendamento encontrado para esta data na Google Agenda.', true);
+          } else {
+            mostrarAlerta('&#9989; ' + agendamentos.length + ' agendamento(s) carregado(s) da Google Agenda!', true);
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error('Erro Calendar:', err);
+          mostrarAlerta('Aviso Google Agenda: Verifique autorizacao de acesso.', false);
+        })
+        .obterAgendamentosHoje(dataRef);
+    }
+
+    function detectarServicoPorRegras(textoAgenda, profissional) {
+      if (!textoAgenda) return { servico: '', valor: null, clienteLimpo: '' };
+      
+      let clienteLimpo = String(textoAgenda).trim();
+      let servicoDetectado = '';
+      let valorSugerido = null;
+      
+      const regras = appState.regrasDePara || [];
+      if (regras.length > 0) {
+        const profNome = (profissional || '').toLowerCase().trim();
+        // Filtra regras da profissional ou "Todas", e ordena pelos termos mais longos primeiro (ex: "SH" antes de "S")
+        const regrasFiltradas = regras.filter(r => {
+          const rp = (r.profissional || 'todas').toLowerCase().trim();
+          return rp === 'todas' || rp === profNome;
+        }).sort((a, b) => b.termo.length - a.termo.length);
+
+        for (const reg of regrasFiltradas) {
+          const termo = String(reg.termo || '').trim();
+          if (!termo) continue;
+
+          // Cria regex com delimitadores de palavra, espaco ou pontuacao
+          const termoEscapado = termo.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regex = new RegExp('(^|[\\s\\-_/(),])' + termoEscapado + '($|[\\s\\-_/(),])', 'i');
+
+          if (regex.test(clienteLimpo)) {
+            servicoDetectado = reg.servico;
+            valorSugerido = reg.valorPadrao || null;
+            // Remove o termo do nome da cliente
+            clienteLimpo = clienteLimpo.replace(regex, ' ').replace(/\s+/g, ' ').trim();
+            break;
+          }
+        }
+      }
+
+      // Se nao encontrou por regra da planilha, faz um fallback para termos basicos comuns
+      if (!servicoDetectado) {
+        const txtLow = clienteLimpo.toLowerCase();
+        if (txtLow.includes('crio')) servicoDetectado = 'Criofrequência';
+        else if (txtLow.includes('peim')) servicoDetectado = 'PEIM';
+        else if (txtLow.includes('skinbooster')) servicoDetectado = 'Skinbooster';
+        else if (txtLow.includes('pedicure') || txtLow.includes('pé') || txtLow.includes('pe')) servicoDetectado = 'Pedicure';
+        else if (txtLow.includes('manicure') || txtLow.includes('mão') || txtLow.includes('mao')) servicoDetectado = 'Manicure';
+        else if (txtLow.includes('massagem')) servicoDetectado = 'Massagem';
+        else if (txtLow.includes('limpeza')) servicoDetectado = 'Limpeza de Pele';
+        else if (txtLow.includes('sobrancelha')) servicoDetectado = 'Design de Sobrancelha';
+
+        clienteLimpo = clienteLimpo.replace(/skinbooster|peim|criofrequencia|crio|manicure|pedicure|mão|mao|pé|pe/gi, '');
+      }
+
+      // Limpeza final de pontuacoes residuais do nome do cliente
+      clienteLimpo = clienteLimpo.replace(/^[-/(),\s]+|[-/(),\s]+$/g, '').trim();
+
+      return {
+        servico: servicoDetectado,
+        valor: valorSugerido,
+        clienteLimpo: clienteLimpo
+      };
+    }
     function formatarNumeroPt(val) {
       if (val === null || val === undefined || val === '') return '0,00';
       let num;
@@ -1929,6 +2469,7 @@
       const modal = document.getElementById('modalPerfilUsuario');
       const lblNome = document.getElementById('lblPerfilNomeUsuario');
       const lblTipo = document.getElementById('lblPerfilTipoUsuario');
+      const selWpp = document.getElementById('selPreferenciaWhatsAppPerfil');
 
       if (appState.modoGerencial) {
         if (lblNome) lblNome.innerText = '👑 Modo Gerencial (Rose)';
@@ -1941,7 +2482,20 @@
         if (lblTipo) lblTipo.innerText = 'Sessão compartilhada';
       }
 
+      if (selWpp) {
+        selWpp.value = localStorage.getItem('rose_preferencia_whatsapp') || 'perguntar';
+      }
+
       if (modal) modal.style.display = 'flex';
+    }
+
+    function aoMudarPreferenciaWhatsApp(val) {
+      if (val === 'perguntar') {
+        localStorage.removeItem('rose_preferencia_whatsapp');
+      } else {
+        localStorage.setItem('rose_preferencia_whatsapp', val);
+      }
+      mostrarAlerta('Preferência de WhatsApp atualizada com sucesso!', true);
     }
 
     function fecharModalPerfilUsuario() {
@@ -2482,14 +3036,160 @@
         });
     }
 
-    function enviarWhatsAppComprovante(prof, sem, comissao, faxina, liquido) {
-      const msg = 'Olá ' + prof + '! Segue o demonstrativo de comissões da ' + sem + ' no Rose Estética:\n\n' +
+    let dadosComprovanteAtual = null;
+
+    function formatarMensagemComprovante(prof, sem, comissao, faxina, liquido) {
+      return 'Olá ' + prof + '! Segue o demonstrativo de comissões da ' + sem + ' no Rose Estética:\n\n' +
         '• Total Comissões: ' + formatarMoedaPt(comissao) + '\n' +
         '• Rateio Faxina: - ' + formatarMoedaPt(faxina) + '\n' +
         '• ✅ Líquido Pago: ' + formatarMoedaPt(liquido) + '\n\n' +
         'Comissões quitadas com sucesso. Muito obrigado pelo seu trabalho!';
-      const url = ['https:', '', 'api.whatsapp.com', 'send?text=' + encodeURIComponent(msg)].join('/');
+    }
+
+    function enviarWhatsAppComprovante(prof, sem, comissao, faxina, liquido, forcarModal) {
+      const msg = formatarMensagemComprovante(prof, sem, comissao, faxina, liquido);
+      dadosComprovanteAtual = {
+        prof: prof,
+        sem: sem,
+        comissao: comissao,
+        faxina: faxina,
+        liquido: liquido,
+        msg: msg
+      };
+
+      const pref = localStorage.getItem('rose_preferencia_whatsapp') || 'perguntar';
+
+      // Se a usuária já configurou para abrir direto (e não clicou no botão de opções '⚙')
+      if (!forcarModal && (pref === 'pessoal' || pref === 'business')) {
+        dispararEnvioWhatsApp(pref, msg);
+        mostrarAlerta('Abrindo WhatsApp ' + (pref === 'pessoal' ? 'Pessoal' : 'Business') + '...', true);
+        return;
+      }
+
+      abrirModalEscolhaWhatsApp();
+    }
+
+    function abrirModalEscolhaWhatsApp() {
+      if (!dadosComprovanteAtual) return;
+      const modal = document.getElementById('modalEscolhaWhatsApp');
+      const lblProf = document.getElementById('lblWppProf');
+      const lblSem = document.getElementById('lblWppSemana');
+      const lblLiq = document.getElementById('lblWppLiquido');
+      const chk = document.getElementById('chkLembrarPreferenciaWpp');
+      const btnShare = document.getElementById('btnWppCompartilharNativo');
+
+      if (lblProf) lblProf.innerText = dadosComprovanteAtual.prof;
+      if (lblSem) lblSem.innerText = dadosComprovanteAtual.sem;
+      if (lblLiq) lblLiq.innerText = formatarMoedaPt(dadosComprovanteAtual.liquido);
+
+      const pref = localStorage.getItem('rose_preferencia_whatsapp') || 'perguntar';
+      if (chk) chk.checked = (pref === 'pessoal' || pref === 'business');
+
+      if (btnShare) {
+        btnShare.style.display = (navigator && navigator.share) ? 'flex' : 'none';
+      }
+
+      if (modal) modal.style.display = 'flex';
+    }
+
+    function fecharModalEscolhaWhatsApp() {
+      const modal = document.getElementById('modalEscolhaWhatsApp');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function executarEnvioWpp(tipo) {
+      if (!dadosComprovanteAtual) return;
+      const chk = document.getElementById('chkLembrarPreferenciaWpp');
+      if (chk && chk.checked) {
+        localStorage.setItem('rose_preferencia_whatsapp', tipo);
+      } else {
+        localStorage.removeItem('rose_preferencia_whatsapp');
+      }
+
+      const msg = dadosComprovanteAtual.msg;
+      fecharModalEscolhaWhatsApp();
+      dispararEnvioWhatsApp(tipo, msg);
+    }
+
+    function dispararEnvioWhatsApp(tipo, msg) {
+      const textoCodificado = encodeURIComponent(msg);
+      const isAndroid = /Android/i.test(navigator.userAgent);
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isAndroid) {
+        if (tipo === 'pessoal') {
+          // Dispara intent explícito forçando o pacote padrão do WhatsApp (com.whatsapp)
+          const fallback = encodeURIComponent('https://api.whatsapp.com/send?text=' + textoCodificado);
+          window.location.href = `intent://send/?text=${textoCodificado}#Intent;scheme=whatsapp;package=com.whatsapp;S.browser_fallback_url=${fallback};end;`;
+          return;
+        } else if (tipo === 'business') {
+          // Dispara intent explícito forçando o pacote do WhatsApp Business (com.whatsapp.w4b)
+          const fallback = encodeURIComponent('https://api.whatsapp.com/send?text=' + textoCodificado);
+          window.location.href = `intent://send/?text=${textoCodificado}#Intent;scheme=whatsapp;package=com.whatsapp.w4b;S.browser_fallback_url=${fallback};end;`;
+          return;
+        }
+      }
+
+      if (isIOS) {
+        if (tipo === 'business') {
+          window.location.href = `whatsapp-smb://send?text=${textoCodificado}`;
+          return;
+        } else {
+          window.location.href = `whatsapp://send?text=${textoCodificado}`;
+          return;
+        }
+      }
+
+      // Computador / Web / Fallback universal
+      const url = 'https://api.whatsapp.com/send?text=' + textoCodificado;
       window.open(url, '_blank');
+    }
+
+    function copiarTextoComprovante() {
+      if (!dadosComprovanteAtual) return;
+      const msg = dadosComprovanteAtual.msg;
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(msg).then(() => {
+          mostrarAlerta('Texto do comprovante copiado com sucesso!', true);
+          fecharModalEscolhaWhatsApp();
+        }).catch(() => fallbackCopiarTexto(msg));
+      } else {
+        fallbackCopiarTexto(msg);
+      }
+    }
+
+    function fallbackCopiarTexto(texto) {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = texto;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        mostrarAlerta('Texto do comprovante copiado com sucesso!', true);
+        fecharModalEscolhaWhatsApp();
+      } catch (e) {
+        mostrarAlerta('Não foi possível copiar automaticamente.', false);
+      }
+    }
+
+    function compartilharComprovanteNativo() {
+      if (!dadosComprovanteAtual) return;
+      if (navigator.share) {
+        navigator.share({
+          title: 'Demonstrativo de Comissões - ' + dadosComprovanteAtual.prof,
+          text: dadosComprovanteAtual.msg
+        }).then(() => {
+          fecharModalEscolhaWhatsApp();
+        }).catch(err => {
+          console.log('Compartilhamento cancelado', err);
+        });
+      } else {
+        mostrarAlerta('Compartilhamento nativo não suportado neste dispositivo.', false);
+      }
     }
 
     function carregarExtrato() {
@@ -2539,9 +3239,10 @@
                   : `<span class="badge" style="background: #fef9e7; color: #b7950b; border: 1px solid #f9e79f; padding: 4px 8px; border-radius: 4px; font-size: 11px;">&#9888;&#65039; Pendente</span>`;
 
                 const btnAcao = isPago
-                  ? `<div style="display: flex; gap: 4px; justify-content: center;">
-                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 8px; color: #27ae60;" onclick="enviarWhatsAppComprovante('${rp.profissional}', '${res.semana}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}')">&#128242; WhatsApp</button>
-                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 8px; color: var(--gray-text);" title="Desmarcar" onclick="cancelarQuitacao('${rp.profissional}')">&#8635;</button>
+                  ? `<div style="display: flex; gap: 3px; justify-content: center;">
+                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 7px; color: #27ae60;" onclick="enviarWhatsAppComprovante('${rp.profissional}', '${res.semana}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}')">&#128242; WhatsApp</button>
+                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 6px; color: #16a085;" title="Opções de envio WhatsApp" onclick="enviarWhatsAppComprovante('${rp.profissional}', '${res.semana}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}', true)">&#9881;</button>
+                       <button class="btn btn-outline" style="font-size: 11px; padding: 4px 6px; color: var(--gray-text);" title="Desmarcar" onclick="cancelarQuitacao('${rp.profissional}')">&#8635;</button>
                      </div>`
                   : `<button class="btn btn-success" style="font-size: 11px; padding: 5px 10px;" onclick="confirmarQuitacao('${rp.profissional}', '${rp.totalComissao}', '${rp.rateioFaxina}', '${rp.liquidoAPagar}')">&#128176; Confirmar Pgto</button>`;
 
