@@ -940,6 +940,8 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
           console.log('[PWA] Service Worker registrado com sucesso:', reg.scope);
+          // Força verificação imediata de nova versão no servidor
+          if (typeof reg.update === 'function') reg.update();
         }).catch(err => {
           console.log('[PWA] Falha ao registrar Service Worker:', err);
         });
@@ -1032,15 +1034,35 @@
     }
 
     const CHAVE_STORAGE_AUTH = 'rose_estetica_auth_v1';
+    const CHAVE_STORAGE_PROFS = 'rose_estetica_profs_cache_v1';
 
-    let appState = {
-      profissionais: [
+    function carregarProfsStorage() {
+      try {
+        const c = localStorage.getItem(CHAVE_STORAGE_PROFS);
+        if (c) {
+          const lista = JSON.parse(c);
+          if (Array.isArray(lista) && lista.length > 0) return lista;
+        }
+      } catch (e) {}
+      return [
         { nome: 'Paula', pin: '1234' },
         { nome: 'Taty', pin: '2345' },
         { nome: 'Fabiana', pin: '3456' },
         { nome: 'Mariana', pin: '4567' },
         { nome: 'Rose', pin: '1209' }
-      ],
+      ];
+    }
+
+    function salvarProfsStorage(lista) {
+      try {
+        if (Array.isArray(lista) && lista.length > 0) {
+          localStorage.setItem(CHAVE_STORAGE_PROFS, JSON.stringify(lista));
+        }
+      } catch (e) {}
+    }
+
+    let appState = {
+      profissionais: carregarProfsStorage(),
       formasPagamento: [],
       regrasDePara: [],
       semanaAtual: 'S42',
@@ -1183,15 +1205,13 @@
       let profEncontrada = null;
       if (nomeEscolhido && nomeEscolhido !== 'AUTO') {
         profEncontrada = (appState.profissionais || []).find(p => {
-          const pinCad = String(p.pin || '').trim();
-          const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
-          return p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinCad === pin || pinPad === pin);
+          const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
+          return p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinValido === pin);
         });
       } else {
         profEncontrada = (appState.profissionais || []).find(p => {
-          const pinCad = String(p.pin || '').trim();
-          const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
-          return (pinCad === pin || pinPad === pin);
+          const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
+          return (pinValido === pin);
         });
       }
 
@@ -1323,6 +1343,7 @@
         }
         if (data.profissionais && data.profissionais.length > 0) {
           appState.profissionais = data.profissionais;
+          salvarProfsStorage(data.profissionais);
         }
         if (data.semanaAtual) {
           appState.semanaAtual = data.semanaAtual;
@@ -2111,9 +2132,10 @@
       google.script.run
         .withSuccessHandler(res => {
           if (res && res.status === 'sucesso') {
-            // Atualiza PIN em memoria
+            // Atualiza PIN em memoria e no storage local
             const prof = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === profNome.toLowerCase());
             if (prof) prof.pin = res.novoPin;
+            salvarProfsStorage(appState.profissionais);
 
             // Se for a usuaria atualmente conectada, atualiza PIN de sessao
             const ehUsuarioAtual = appState.modoGerencial ? (profNome.toLowerCase() === 'rose') : (profNome.toLowerCase() === (appState.profissionalLogada || '').toLowerCase());
@@ -2187,9 +2209,8 @@
 
       // 2. PIN Individual de Profissional (Paula, Taty, Fabiana, Mariana)
       const profEncontrada = (appState.profissionais || []).find(p => {
-        const pinCadastrado = String(p.pin || '').trim();
-        const pinPad = pinsPadrao[String(p.nome || '').toLowerCase()];
-        return (pinCadastrado === pin || pinPad === pin);
+        const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
+        return (pinValido === pin);
       });
 
       if (profEncontrada) {
