@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <base target="_top">
@@ -1045,11 +1045,11 @@
         }
       } catch (e) {}
       return [
-        { nome: 'Paula', pin: '1234' },
-        { nome: 'Taty', pin: '2345' },
-        { nome: 'Fabiana', pin: '3456' },
-        { nome: 'Mariana', pin: '4567' },
-        { nome: 'Rose', pin: '1209' }
+        { nome: 'Paula' },
+        { nome: 'Taty' },
+        { nome: 'Fabiana' },
+        { nome: 'Mariana' },
+        { nome: 'Rose' }
       ];
     }
 
@@ -1175,19 +1175,11 @@
         return;
       }
 
-      const pinsPadrao = {
-        'paula': '1234',
-        'taty': '2345',
-        'fabiana': '3456',
-        'mariana': '4567',
-        'rose': '1209'
-      };
-
       const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
-      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '1209';
+      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '';
 
-      // 1. PIN Gerencial Master ou Rose
-      if (pin === '8665' || (pinRose && pin === pinRose) || (nomeEscolhido.toLowerCase() === 'rose' && pin === pinRose)) {
+      // 1. PIN Gerencial Master (8665) ou Rose (PIN dinâmico)
+      if (pin === '8665' || (pinRose && pin === pinRose) || (nomeEscolhido.toLowerCase() === 'rose' && pinRose && pin === pinRose)) {
         if (erro) erro.style.display = 'none';
         appState.autenticado = true;
         appState.modoGerencial = true;
@@ -1201,17 +1193,17 @@
         return;
       }
 
-      // 2. PIN Individual de Profissional
+      // 2. PIN Individual de Profissional (estritamente dinâmico)
       let profEncontrada = null;
       if (nomeEscolhido && nomeEscolhido !== 'AUTO') {
         profEncontrada = (appState.profissionais || []).find(p => {
-          const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
-          return p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinValido === pin);
+          const pinValido = String(p.pin || '').trim();
+          return pinValido && p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinValido === pin);
         });
       } else {
         profEncontrada = (appState.profissionais || []).find(p => {
-          const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
-          return (pinValido === pin);
+          const pinValido = String(p.pin || '').trim();
+          return pinValido && (pinValido === pin);
         });
       }
 
@@ -2187,16 +2179,8 @@
       const erro = document.getElementById('erroPinModal');
       const pin = input ? input.value.trim() : '';
       
-      const pinsPadrao = {
-        'paula': '1234',
-        'taty': '2345',
-        'fabiana': '3456',
-        'mariana': '4567',
-        'rose': '1209'
-      };
-
       const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
-      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '1209';
+      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '';
 
       // 1. PIN Gerencial / Master / Rose
       if (pin === '8665' || (pinRose && pin === pinRose)) {
@@ -2207,10 +2191,10 @@
         return;
       }
 
-      // 2. PIN Individual de Profissional (Paula, Taty, Fabiana, Mariana)
+      // 2. PIN Individual de Profissional (estritamente dinâmico)
       const profEncontrada = (appState.profissionais || []).find(p => {
-        const pinValido = String(p.pin || '').trim() || pinsPadrao[String(p.nome || '').toLowerCase()];
-        return (pinValido === pin);
+        const pinValido = String(p.pin || '').trim();
+        return pinValido && (pinValido === pin);
       });
 
       if (profEncontrada) {
@@ -2320,16 +2304,9 @@
       }
 
       const profObj = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === nomeProf.toLowerCase());
-      const pinsPadrao = {
-        'paula': '1234',
-        'taty': '2345',
-        'fabiana': '3456',
-        'mariana': '4567',
-        'rose': '1209'
-      };
-      const pinEsperado = (profObj && profObj.pin) ? String(profObj.pin).trim() : (pinsPadrao[nomeProf.toLowerCase()] || '1234');
+      const pinEsperado = (profObj && profObj.pin) ? String(profObj.pin).trim() : '';
 
-      if (pinDigitado === '8665' || (nomeProf.toLowerCase() === 'rose' && pinDigitado === pinEsperado)) {
+      if (pinDigitado === '8665' || (nomeProf.toLowerCase() === 'rose' && pinEsperado && pinDigitado === pinEsperado)) {
         if (erro) erro.style.display = 'none';
         if (inp) inp.value = '';
         ativarModoGerencial(true);
