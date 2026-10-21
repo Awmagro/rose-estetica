@@ -788,7 +788,7 @@
       <p style="font-size: 13px; color: var(--gray-text); margin-bottom: 16px;">
         Digite seu PIN de 4 dígitos:
       </p>
-      <input type="password" id="inputPinGerencial" maxlength="6" placeholder="****" style="width: 100%; font-size: 26px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 12px; outline: none; box-sizing: border-box;" onkeydown="if(event.key==='Enter') confirmarPinModal()">
+      <input type="password" id="inputPinGerencial" inputmode="numeric" maxlength="6" placeholder="****" style="width: 100%; font-size: 26px; text-align: center; letter-spacing: 8px; padding: 10px; border: 2px solid var(--primary); border-radius: 8px; margin-bottom: 12px; outline: none; box-sizing: border-box;" onkeydown="if(event.key==='Enter') confirmarPinModal()">
       <div id="erroPinModal" style="display: none; color: var(--danger); font-size: 12px; font-weight: bold; margin-bottom: 12px;">PIN não reconhecido! Tente novamente.</div>
       <div style="display: flex; gap: 8px;">
         <button type="button" class="btn btn-outline" style="flex: 1; padding: 8px;" onclick="fecharModalPin()">Cancelar</button>
@@ -817,6 +817,9 @@
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px;">
+        <button type="button" class="btn btn-outline" style="padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: var(--primary); color: var(--primary);" onclick="fecharModalPerfilUsuario(); abrirModalPin()">
+          <span>&#128273;</span> Digitar Senha / PIN
+        </button>
         <button type="button" class="btn btn-outline" style="padding: 12px; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px; border-color: var(--primary); color: var(--primary);" onclick="abrirModalTrocarSenha()">
           <span>&#128273;</span> Trocar Senha
         </button>
@@ -2462,7 +2465,23 @@
     }
 
     function clicarAlternarModo() {
-      abrirModalPerfilUsuario();
+      if (appState.modoGerencial) {
+        abrirModalPerfilUsuario();
+      } else {
+        abrirModalPin();
+      }
+    }
+
+    function abrirModalPin() {
+      const modal = document.getElementById('modalPin');
+      const input = document.getElementById('inputPinGerencial');
+      const erro = document.getElementById('erroPinModal');
+      if (erro) erro.style.display = 'none';
+      if (input) {
+        input.value = '';
+        setTimeout(() => input.focus(), 150);
+      }
+      if (modal) modal.style.display = 'flex';
     }
 
     function abrirModalPerfilUsuario() {
@@ -2938,7 +2957,7 @@
 
     function atualizarVisualModo() {
       const badge = document.getElementById('badgeModo');
-      const btn = document.getElementById('btnAlternarModo');
+      const btn = document.getElementById('btnSairModo') || document.getElementById('btnAlternarModo');
       const cardFaturado = document.getElementById('cardKpiTotalFaturado');
       const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
 
@@ -2947,7 +2966,10 @@
           badge.innerHTML = '&#128081; Gerencial';
           badge.style.background = '#27ae60';
         }
-        if (btn) btn.innerHTML = '&#128274; Sair';
+        if (btn) {
+          btn.style.display = 'inline-flex';
+          btn.innerHTML = '&#128274; Sair';
+        }
         if (cardFaturado) cardFaturado.style.display = 'block';
         if (painelQuitacao) painelQuitacao.style.display = 'block';
       } else if (appState.profissionalLogada) {
@@ -2955,15 +2977,20 @@
           badge.innerHTML = '&#128100; ' + appState.profissionalLogada;
           badge.style.background = '#8e44ad';
         }
-        if (btn) btn.innerHTML = '&#128274; Sair';
+        if (btn) {
+          btn.style.display = 'inline-flex';
+          btn.innerHTML = '&#128274; Sair';
+        }
         if (cardFaturado) cardFaturado.style.display = 'none';
         if (painelQuitacao) painelQuitacao.style.display = 'none';
       } else {
         if (badge) {
-          badge.innerHTML = '&#127970; Balcão';
+          badge.innerHTML = '&#128273; Entrar';
           badge.style.background = 'rgba(255,255,255,0.2)';
         }
-        if (btn) btn.innerHTML = '&#128273; PIN';
+        if (btn) {
+          btn.style.display = 'none';
+        }
         if (cardFaturado) cardFaturado.style.display = 'none';
         if (painelQuitacao) painelQuitacao.style.display = 'none';
       }
