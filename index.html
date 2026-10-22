@@ -164,7 +164,7 @@
       margin-bottom: 14px;
     }
     .agenda-title { font-size: 13px; font-weight: 700; color: #b9770e; margin-bottom: 8px; }
-    .agenda-items { display: flex; flex-wrap: wrap; gap: 6px; max-height: 110px; overflow-y: auto; padding-right: 2px; }
+    .agenda-items { display: flex; flex-wrap: wrap; gap: 6px; max-height: 135px; overflow-y: auto; padding-right: 2px; }
     .agenda-pill {
       background: #fff;
       border: 1px solid #eb984e;
@@ -190,6 +190,18 @@
     }
     .item-recem-adicionado {
       animation: destaqueItemAdicionado 2.5s ease-out;
+    }
+
+    /* Agrupamento visual de comandas em Caixa e Comissões */
+    .separador-comanda td {
+      border-top: 2px solid #64748b !important;
+    }
+    .comanda-grupo-multiplo td {
+      background-color: #faf5ff;
+    }
+    .item-mesma-comanda td {
+      border-top: 1px dashed #cbd5e1 !important;
+      background-color: #faf5ff;
     }
 
     /* Comandas Abertas Cards */
@@ -366,7 +378,7 @@
       
       <!-- Agendamentos Google Calendar de Hoje -->
       <div id="boxAgenda" class="agenda-box" style="display: none;">
-        <div class="agenda-title">&#128197; Agendamentos de Hoje (Clique para preencher a comanda):</div>
+        <div class="agenda-title">&#128197; Agendamentos de Hoje</div>
         <div id="listaAgenda" class="agenda-items"></div>
       </div>
 
@@ -461,7 +473,7 @@
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
           <span style="font-size: 13px; font-weight: 700; color: var(--dark);">&#10004; Procedimentos Registrados:</span>
-          <span style="font-size: 11px; color: var(--gray-text);">&#128465; Clique no lixo para cancelar item</span>
+          <span style="font-size: 11px; color: var(--gray-text); font-weight: 600;">&#128465; Exclui</span>
         </div>
 
         <table class="tabela-itens">
@@ -485,9 +497,8 @@
 
         <!-- Bloco de Finalizacao e Pagamento com Suporte a Multiplos Meios e Troco Integrado -->
         <div style="margin-top: 18px; padding: 16px; background: #fdfefe; border: 1px solid var(--gray-border); border-radius: 8px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px;">
+          <div style="margin-bottom: 12px; border-bottom: 1px solid var(--gray-border); padding-bottom: 8px;">
             <strong style="color: var(--primary); font-size: 14px;">&#128179; Forma de Pagamento &amp; Acerto</strong>
-            <span style="font-size: 12px; color: var(--gray-text);">Aceita pagamento total ou misto (dividido)</span>
           </div>
 
           <!-- Botoes de Preenchimento Rapido 100% (Harmonioso em Grid 2x2) -->
@@ -3008,12 +3019,45 @@
             return;
           }
 
+          // Pré-contagem de lançamentos por comanda para detectar agrupamentos
+          const contagemComandas = {};
+          (res.linhas || []).forEach(l => {
+            const n = String(l.numComanda || '');
+            contagemComandas[n] = (contagemComandas[n] || 0) + 1;
+          });
+
+          let ultimaComanda = null;
           res.linhas.forEach(l => {
             let tr = document.createElement('tr');
+            const n = String(l.numComanda || '');
+            const temMultiplos = (contagemComandas[n] > 1);
+            const mudouComanda = (ultimaComanda !== null && n !== String(ultimaComanda));
+            const ehMesmaComanda = (ultimaComanda !== null && n === String(ultimaComanda));
+
+            if (mudouComanda) {
+              tr.className = 'separador-comanda';
+            }
+            if (temMultiplos) {
+              tr.classList.add('comanda-grupo-multiplo');
+              if (ehMesmaComanda) {
+                tr.classList.add('item-mesma-comanda');
+              }
+            }
+            ultimaComanda = n;
+
+            let numComandaHtml = `<strong>#${l.numComanda}</strong>`;
+            if (temMultiplos) {
+              if (ehMesmaComanda) {
+                numComandaHtml = `<span style="color: var(--primary); font-size: 11px; font-weight: 600;">↳ #${l.numComanda}</span>`;
+              } else {
+                numComandaHtml = `<strong>#${l.numComanda}</strong> <span style="font-size: 10px; background: #e9d5ff; color: #6b21a8; padding: 1px 4px; border-radius: 4px; font-weight: bold;" title="Comanda com múltiplos lançamentos">${contagemComandas[n]}x</span>`;
+              }
+            }
+
             const semBadge = l.semana ? `<span class="badge" style="background: var(--purple-light); color: var(--primary); font-size: 11px; padding: 2px 6px; margin-right: 6px; font-weight: bold;">${l.semana}</span>` : '';
             tr.innerHTML = `
               <td>${semBadge}${l.data}</td>
-              <td><strong>#${l.numComanda}</strong></td>
+              <td>${numComandaHtml}</td>
               <td>${l.cliente}</td>
               <td>${l.profissional}</td>
               <td>${l.descricao}</td>
@@ -3242,9 +3286,41 @@
         return;
       }
 
+      // Pré-contagem de lançamentos por comanda para detectar agrupamentos
+      const contagemComandas = {};
+      linhasFiltradas.forEach(l => {
+        const n = String(l.numComanda || '');
+        contagemComandas[n] = (contagemComandas[n] || 0) + 1;
+      });
+
+      let ultimaComanda = null;
       linhasFiltradas.forEach(l => {
         let tr = document.createElement('tr');
         let trocoTxt = (Number(l.troco) > 0) ? formatarNumeroPt(l.troco) : '-';
+        const n = String(l.numComanda || '');
+        const temMultiplos = (contagemComandas[n] > 1);
+        const mudouComanda = (ultimaComanda !== null && n !== String(ultimaComanda));
+        const ehMesmaComanda = (ultimaComanda !== null && n === String(ultimaComanda));
+
+        if (mudouComanda) {
+          tr.className = 'separador-comanda';
+        }
+        if (temMultiplos) {
+          tr.classList.add('comanda-grupo-multiplo');
+          if (ehMesmaComanda) {
+            tr.classList.add('item-mesma-comanda');
+          }
+        }
+        ultimaComanda = n;
+
+        let numComandaHtml = `<strong>#${l.numComanda}</strong>`;
+        if (temMultiplos) {
+          if (ehMesmaComanda) {
+            numComandaHtml = `<span style="color: var(--primary); font-size: 11px; font-weight: 600;">↳ #${l.numComanda}</span>`;
+          } else {
+            numComandaHtml = `<strong>#${l.numComanda}</strong> <span style="font-size: 10px; background: #e9d5ff; color: #6b21a8; padding: 1px 4px; border-radius: 4px; font-weight: bold;" title="Comanda com múltiplos lançamentos">${contagemComandas[n]}x</span>`;
+          }
+        }
         
         // A coluna com checkbox de confirmacao e acao de cancelar so aparecem no Modo Gerencial!
         const colConf = appState.modoGerencial
@@ -3259,7 +3335,7 @@
           ${colConf}
           ${colAcao}
           <td>${l.data}</td>
-          <td><strong>#${l.numComanda}</strong></td>
+          <td>${numComandaHtml}</td>
           <td>${l.cliente}</td>
           <td>${l.profissional}</td>
           <td><span class="badge" style="background: var(--gray-light); color: var(--dark); border: 1px solid var(--gray-border); padding: 3px 8px; border-radius: 4px; font-size: 11px;">${l.formaPg}</span></td>
