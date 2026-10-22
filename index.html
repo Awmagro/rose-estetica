@@ -180,9 +180,17 @@
 
     /* Itens da Comanda Table */
     .tabela-itens { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    .tabela-itens th, .tabela-itens td { padding: 9px 10px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--gray-border); }
+    .tabela-itens th, .tabela-itens td { padding: 9px 8px; font-size: 13px; text-align: left; border-bottom: 1px solid var(--gray-border); }
     .tabela-itens th { background: var(--gray-light); font-weight: 600; color: var(--gray-text); }
     .tabela-itens .total-row td { font-size: 15px; font-weight: 700; color: var(--primary-dark); border-top: 2px solid var(--gray-border); }
+
+    @keyframes destaqueItemAdicionado {
+      0% { background-color: #bbf7d0; }
+      100% { background-color: transparent; }
+    }
+    .item-recem-adicionado {
+      animation: destaqueItemAdicionado 2.5s ease-out;
+    }
 
     /* Comandas Abertas Cards */
     .aberta-card {
@@ -362,39 +370,45 @@
         <div id="listaAgenda" class="agenda-items"></div>
       </div>
 
-      <div class="card">
-        <div class="card-title">
+      <div class="card" style="padding: 12px 14px; margin-bottom: 12px;">
+        <div class="card-title" style="margin-bottom: 8px;">
           <span>Identificação da Comanda</span>
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 10px;" onclick="sincronizarAgendaGoogle()">&#128197; Google Agenda</button>
-            <button type="button" class="btn btn-outline" style="font-size: 12px; padding: 6px 12px;" onclick="limparTudoParaNovaComanda()">&#10024; Nova Comanda</button>
+            <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 8px;" onclick="sincronizarAgendaGoogle()">&#128197; Google Agenda</button>
+            <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="limparTudoParaNovaComanda()">&#10024; Nova Comanda</button>
           </div>
         </div>
 
-        <div class="grid-3">
-          <div class="form-group">
-            <label>Nº Comanda:</label>
-            <input type="number" id="numComanda" placeholder="Ex: 4575" oninput="verificarMudancaNumComanda()">
+        <!-- Linha 1: Nº Comanda (controlado pelo sistema) e Data na mesma linha -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; margin-bottom: 2px;">&#128274; Nº Comanda:</label>
+            <input type="number" id="numComanda" readonly placeholder="Carregando..." style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: var(--primary); padding: 8px 10px; font-size: 14px;" title="Número controlado automaticamente pelo sistema. Para continuar uma comanda, clique na aba Abertas.">
           </div>
-          <div class="form-group">
-            <label>Data:</label>
-            <input type="date" id="dataAtendimento">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; margin-bottom: 2px;">&#128197; Data:</label>
+            <input type="date" id="dataAtendimento" style="padding: 8px 10px; font-size: 14px;">
           </div>
-          <div class="form-group">
-            <label>Nome da Cliente:</label>
-            <input type="text" id="cliente" placeholder="Nome da cliente">
-          </div>
+        </div>
+
+        <!-- Linha 2: Nome da Cliente -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; margin-bottom: 2px;">&#128100; Nome da Cliente:</label>
+          <input type="text" id="cliente" placeholder="Nome da cliente" style="padding: 8px 10px; font-size: 14px;">
         </div>
       </div>
 
-      <!-- Inclusao de Servico/Profissional -->
-      <div class="card">
-        <div class="card-title">Adicionar Procedimento / Profissional</div>
+      <!-- Inclusao de Servico/Profissional Compacto -->
+      <div class="card" style="padding: 12px 14px; margin-bottom: 12px;">
+        <div class="card-title" style="margin-bottom: 8px; font-size: 13px;">
+          <span>Adicionar Procedimento</span>
+        </div>
         
-        <div class="grid-3">
-          <div class="form-group">
-            <label>Profissional:</label>
-            <select id="selProfissional">
+        <!-- Linha 1: Profissional e Valor R$ na mesma linha -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; margin-bottom: 2px;">Profissional:</label>
+            <select id="selProfissional" style="padding: 8px 10px; font-size: 14px;">
               <option value="Paula">Paula</option>
               <option value="Taty">Taty</option>
               <option value="Fabiana">Fabiana</option>
@@ -402,41 +416,61 @@
               <option value="Rose">Rose</option>
             </select>
           </div>
-          <div class="form-group">
-            <label>Serviço / Descrição:</label>
-            <input type="text" id="descricaoServico" list="listaServicosSugeridos" placeholder="Ex: Manicure, Cabelo...">
-            <datalist id="listaServicosSugeridos">
-              <option value="Manicure"></option>
-              <option value="Pedicure"></option>
-              <option value="Escova"></option>
-              <option value="Corte"></option>
-              <option value="Coloração"></option>
-              <option value="Massagem"></option>
-              <option value="Limpeza de Pele"></option>
-              <option value="Depilação"></option>
-              <option value="Sobrancelha"></option>
-            </datalist>
-          </div>
-          <div class="form-group">
-            <label>Valor R$:</label>
-            <input type="number" step="0.01" id="valorItem" placeholder="0.00">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="font-size: 11px; margin-bottom: 2px;">Valor R$:</label>
+            <input type="number" step="0.01" id="valorItem" placeholder="0.00" style="padding: 8px 10px; font-size: 14px; font-weight: 700; color: var(--success);">
           </div>
         </div>
 
-        <button id="btnAddItem" class="btn btn-secondary btn-block" onclick="gravarItem(false)">
+        <!-- Linha 2: Serviço / Descrição -->
+        <div class="form-group" style="margin-bottom: 10px;">
+          <label style="font-size: 11px; margin-bottom: 2px;">Serviço / Descrição:</label>
+          <input type="text" id="descricaoServico" list="listaServicosSugeridos" placeholder="Ex: Manicure, Cabelo, Massagem..." style="padding: 8px 10px; font-size: 14px;">
+          <datalist id="listaServicosSugeridos">
+            <option value="Manicure"></option>
+            <option value="Pedicure"></option>
+            <option value="Escova"></option>
+            <option value="Corte"></option>
+            <option value="Coloração"></option>
+            <option value="Massagem"></option>
+            <option value="Limpeza de Pele"></option>
+            <option value="Depilação"></option>
+            <option value="Sobrancelha"></option>
+          </datalist>
+        </div>
+
+        <button id="btnAddItem" class="btn btn-secondary btn-block" style="padding: 10px; font-size: 14px; font-weight: 600;" onclick="gravarItem(false)">
           &#10133; Adicionar Item
         </button>
       </div>
 
       <!-- Itens Adicionados na Comanda Atual -->
-      <div class="card" id="cardItensComanda" style="display: none;">
-        <div class="card-title">Serviços Lançados nesta Comanda</div>
+      <div class="card" id="cardItensComanda" style="display: none; padding: 14px; margin-bottom: 12px; border: 1.5px solid #d8b4fe;">
+        
+        <!-- Destaque do Resumo Financeiro da Comanda no Topo da Tabela -->
+        <div style="display: flex; justify-content: space-between; align-items: center; background: #f5f3ff; border: 1.5px solid #ddd6fe; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px;">
+          <div>
+            <strong style="color: var(--primary); font-size: 14px; display: block;">&#128203; Resumo da Comanda</strong>
+            <span id="lblQtdServicosResumo" style="font-size: 12px; color: var(--gray-text);">0 serviços lançados</span>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 11px; font-weight: 600; text-transform: uppercase; color: var(--gray-text); display: block;">Total da Comanda:</span>
+            <strong id="lblTotalComandaDestaque" style="font-size: 18px; color: var(--primary); font-weight: 800;">R$ 0,00</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+          <span style="font-size: 13px; font-weight: 700; color: var(--dark);">&#10004; Procedimentos Registrados:</span>
+          <span style="font-size: 11px; color: var(--gray-text);">&#128465; Clique no lixo para cancelar item</span>
+        </div>
+
         <table class="tabela-itens">
           <thead>
             <tr>
               <th>Profissional</th>
               <th>Serviço</th>
               <th style="text-align: right;">Valor R$</th>
+              <th style="text-align: center; width: 42px;">Excluir</th>
             </tr>
           </thead>
           <tbody id="corpoTabelaItens"></tbody>
@@ -444,6 +478,7 @@
             <tr class="total-row">
               <td colspan="2">TOTAL DA COMANDA</td>
               <td style="text-align: right;" id="lblTotalComanda">R$ 0,00</td>
+              <td></td>
             </tr>
           </tfoot>
         </table>
@@ -1055,6 +1090,7 @@
         else if (metodo === 'obterAgendamentosHoje') { payload.data = args[0]; }
         else if (metodo === 'proximoNumeroComanda') { }
         else if (metodo === 'salvarItemComanda') { payload.dados = args[0]; }
+        else if (metodo === 'removerItemComandaAberta') { payload.numComanda = args[0]; payload.idRegistro = args[1]; payload.profissional = args[2]; payload.servico = args[3]; payload.valor = args[4]; }
         else if (metodo === 'fecharComandaCompleta') { payload.numComanda = args[0]; payload.formaPg = args[1]; payload.trocoVal = args[2]; }
         else if (metodo === 'montarResumoComanda') { payload.numComanda = args[0]; }
         else if (metodo === 'listarComandasAbertas') { }
@@ -1664,9 +1700,10 @@
       if (c.data) document.getElementById('dataAtendimento').value = c.data;
       document.getElementById('cliente').value = c.cliente;
 
-      appState.comandaAtualItens = c.itens.map(it => ({
+      appState.comandaAtualItens = (c.itens || []).map(it => ({
+        id: it.id,
         profissional: it.profissional,
-        descricao: it.servico,
+        descricao: it.servico || it.descricao,
         valor: it.valor
       }));
 
@@ -1691,8 +1728,9 @@
           document.getElementById('dataAtendimento').value = comandaExistente.data;
         }
         appState.comandaAtualItens = (comandaExistente.itens || []).map(it => ({
+          id: it.id,
           profissional: it.profissional,
-          descricao: it.servico,
+          descricao: it.servico || it.descricao,
           valor: it.valor
         }));
       } else {
@@ -1721,29 +1759,92 @@
       const card = document.getElementById('cardItensComanda');
       const tbody = document.getElementById('corpoTabelaItens');
       const lblTotal = document.getElementById('lblTotalComanda');
+      const lblTotalDestaque = document.getElementById('lblTotalComandaDestaque');
+      const lblQtd = document.getElementById('lblQtdServicosResumo');
 
       tbody.innerHTML = '';
       if (!appState.comandaAtualItens || appState.comandaAtualItens.length === 0) {
         card.style.display = 'none';
+        if (lblTotalDestaque) lblTotalDestaque.innerText = 'R$ 0,00';
+        if (lblQtd) lblQtd.innerText = '0 serviços lançados';
         return;
       }
 
       card.style.display = 'block';
       let total = 0;
-      appState.comandaAtualItens.forEach(it => {
+      appState.comandaAtualItens.forEach((it, idx) => {
         let tr = document.createElement('tr');
+        if (it._recente) {
+          tr.className = 'item-recem-adicionado';
+          delete it._recente;
+        }
         let v = Number(it.valor) || 0;
         total += v;
+
+        const safeDesc = (it.descricao || 'Atendimento').replace(/'/g, "\\'");
+        const safeProf = (it.profissional || '').replace(/'/g, "\\'");
+        const btnExcluir = `
+          <button type="button" class="btn btn-outline" style="padding: 3px 6px; font-size: 11px; color: #dc2626; border-color: #fca5a5; line-height: 1;" onclick="confirmarRemoverItem(${it.id || 0}, '${safeDesc}', '${safeProf}', ${v})" title="Remover este serviço da comanda">&#128465;</button>
+        `;
+
         tr.innerHTML = `
           <td><strong>${it.profissional}</strong></td>
           <td>${it.descricao || 'Atendimento'}</td>
           <td style="text-align: right; white-space: nowrap; font-weight: 600;">${formatarNumeroPt(v)}</td>
+          <td style="text-align: center; width: 42px;">${btnExcluir}</td>
         `;
         tbody.appendChild(tr);
       });
 
-      lblTotal.innerText = formatarMoedaPt(total);
+      const totalFormatado = formatarMoedaPt(total);
+      lblTotal.innerText = totalFormatado;
+      if (lblTotalDestaque) lblTotalDestaque.innerText = totalFormatado;
+      if (lblQtd) {
+        const cnt = appState.comandaAtualItens.length;
+        lblQtd.innerText = cnt === 1 ? '1 serviço lançado' : cnt + ' serviços lançados';
+      }
       aoMudarValoresPagamento();
+    }
+
+    function confirmarRemoverItem(idRegistro, descricao, profissional, valor) {
+      const numComanda = document.getElementById('numComanda').value.trim();
+      if (!numComanda) {
+        mostrarAlerta('Número da comanda não identificado.', false);
+        return;
+      }
+
+      const msg = 'Deseja remover este serviço da Comanda #' + numComanda + '?\n\n• Profissional: ' + profissional + '\n• Serviço: ' + descricao + '\n• Valor: ' + formatarMoedaPt(valor);
+      if (!confirm(msg)) return;
+
+      mostrarAlerta('Removendo serviço da comanda #' + numComanda + '...', true);
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res && res.status === 'sucesso') {
+            mostrarAlerta(res.mensagem || 'Serviço removido com sucesso!', true);
+
+            if (res.comandasAbertas) {
+              appState.comandasAbertas = res.comandasAbertas;
+              renderizarComandasAbertas();
+            }
+
+            if (res.comandaAtualizada && res.comandaAtualizada.itens && res.comandaAtualizada.itens.length > 0) {
+              appState.comandaAtualItens = res.comandaAtualizada.itens.map(it => ({
+                id: it.id,
+                profissional: it.profissional,
+                descricao: it.servico,
+                valor: Number(it.valor) || 0
+              }));
+            } else {
+              appState.comandaAtualItens = [];
+            }
+            atualizarTabelaItensTela();
+          } else {
+            mostrarAlerta((res && res.mensagem) || 'Erro ao remover serviço da comanda.', false);
+          }
+        })
+        .withFailureHandler(tratarErro)
+        .removerItemComandaAberta(numComanda, idRegistro, profissional, descricao, valor);
     }
 
     function formatarMoedaBlur(input) {
@@ -1904,9 +2005,34 @@
         }
       }
 
+      // Guarda contra duplo clique acidental no mesmo serviço
+      const agora = Date.now();
+      if (!finalizar && appState._ultimoLancamento &&
+          appState._ultimoLancamento.numComanda === numComanda &&
+          appState._ultimoLancamento.profissional === profissional &&
+          appState._ultimoLancamento.descricao === descricao &&
+          Math.abs(appState._ultimoLancamento.valor - valorNum) < 0.01 &&
+          (agora - appState._ultimoLancamento.timestamp) < 5000) {
+        const confirmarRepetido = confirm('Atenção: Você acabou de adicionar este mesmo serviço (' + profissional + ' - ' + descricao + ' ' + formatarMoedaPt(valorNum) + ').\n\nDeseja realmente adicionar o mesmo serviço novamente?');
+        if (!confirmarRepetido) {
+          return;
+        }
+      }
+
+      if (!finalizar) {
+        appState._ultimoLancamento = {
+          numComanda: numComanda,
+          profissional: profissional,
+          descricao: descricao,
+          valor: valorNum,
+          timestamp: agora
+        };
+      }
+
       const btnAdd = document.getElementById('btnAddItem');
       const btnFin = document.getElementById('btnFinalizar');
       btnAdd.disabled = true;
+      if (!finalizar) btnAdd.innerHTML = '&#9203; Adicionando...';
       btnFin.disabled = true;
 
       const payload = {
@@ -1924,6 +2050,7 @@
       google.script.run
         .withSuccessHandler(res => {
           btnAdd.disabled = false;
+          btnAdd.innerHTML = '&#10133; Adicionar Item';
           btnFin.disabled = false;
 
           if (res.status === 'duplicado') {
@@ -1943,20 +2070,41 @@
             mostrarAlerta('Comanda #' + numComanda + ' finalizada com sucesso!', true);
             limparFormularioComanda(res.proximaComanda);
           } else {
-            mostrarAlerta('Serviço de ' + profissional + ' adicionado à Comanda #' + numComanda + '!', true);
+            mostrarAlerta('✅ Serviço de ' + profissional + ' adicionado à Comanda #' + numComanda + '!', true);
             document.getElementById('valorItem').value = '';
             document.getElementById('descricaoServico').value = '';
 
-            appState.comandaAtualItens.push({
-              profissional: profissional,
-              descricao: descricao,
-              valor: valorNum
-            });
+            if (res.cupom && res.cupom.itens && res.cupom.itens.length > 0) {
+              appState.comandaAtualItens = res.cupom.itens.map(it => ({
+                id: it.id,
+                profissional: it.profissional,
+                descricao: it.servico,
+                valor: Number(it.valor) || 0
+              }));
+              if (appState.comandaAtualItens.length > 0) {
+                appState.comandaAtualItens[appState.comandaAtualItens.length - 1]._recente = true;
+              }
+            } else {
+              appState.comandaAtualItens.push({
+                id: 0,
+                profissional: profissional,
+                descricao: descricao,
+                valor: valorNum,
+                _recente: true
+              });
+            }
             atualizarTabelaItensTela();
+
+            // Rola suavemente ate o card de itens caso necessario
+            const cardItens = document.getElementById('cardItensComanda');
+            if (cardItens) {
+              cardItens.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
           }
         })
         .withFailureHandler(err => {
           btnAdd.disabled = false;
+          btnAdd.innerHTML = '&#10133; Adicionar Item';
           btnFin.disabled = false;
           tratarErro(err);
         })
@@ -1973,6 +2121,10 @@
       document.getElementById('pgValorDebito').value = '';
       document.getElementById('pgValorCredito').value = '';
       document.getElementById('lblValorTrocoDevolver').innerText = 'R$ 0,00';
+      const lblTotalDestaque = document.getElementById('lblTotalComandaDestaque');
+      if (lblTotalDestaque) lblTotalDestaque.innerText = 'R$ 0,00';
+      const lblQtd = document.getElementById('lblQtdServicosResumo');
+      if (lblQtd) lblQtd.innerText = '0 serviços lançados';
       if (appState.profissionalLogada) {
         const selProf = document.getElementById('selProfissional');
         if (selProf) selProf.value = appState.profissionalLogada;
