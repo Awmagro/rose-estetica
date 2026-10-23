@@ -1679,6 +1679,24 @@
         .trim();
     }
 
+    function criarRegexAcentuada(termo) {
+      const norm = normalizarTexto(termo);
+      let pattern = '';
+      for (let i = 0; i < norm.length; i++) {
+        const ch = norm[i];
+        if (ch === 'a') pattern += '[aáàãâäAÁÀÃÂÄ]';
+        else if (ch === 'e') pattern += '[eéèêëEÉÈÊË]';
+        else if (ch === 'i') pattern += '[iíìîïIÍÌÎÏ]';
+        else if (ch === 'o') pattern += '[oóòõôöOÓÒÕÔÖ]';
+        else if (ch === 'u') pattern += '[uúùûüUÚÙÛÜ]';
+        else if (ch === 'c') pattern += '[cçCÇ]';
+        else if (/\s/.test(ch)) pattern += '\\s+';
+        else if (/[-/\\^$*+?.()|[\]{}]/.test(ch)) pattern += '\\' + ch;
+        else pattern += ch;
+      }
+      return pattern;
+    }
+
     function detectarServicoPorRegras(textoAgenda, profissional) {
       if (!textoAgenda) return { servico: '', valor: null, clienteLimpo: '', profissional: '' };
       
@@ -1809,10 +1827,11 @@
             servicoDetectado = cand.servico;
             valorSugerido = cand.valorPadrao;
 
-            // Remove o termo do nome da cliente
+            // Remove o termo do nome da cliente usando regex acentuada inteligente para apagar mesmo com til, cedilha ou acento
             try {
-              const regexRemover = new RegExp('(^|[\\s\\-_/(),:])' + termoEsc + '($|[\\s\\-_/(),:])', 'i');
-              clienteLimpo = clienteLimpo.replace(regexRemover, ' ').trim();
+              const patternAcentuado = criarRegexAcentuada(cand.normTermo);
+              const regexRemover = new RegExp('(^|[\\s\\-_/(),:])(' + patternAcentuado + ')($|[\\s\\-_/(),:])', 'gi');
+              clienteLimpo = clienteLimpo.replace(regexRemover, '$1 $3').trim();
             } catch (eRegex) {
               clienteLimpo = clienteLimpo.replace(cand.termoOriginal, ' ').trim();
             }
@@ -1866,6 +1885,7 @@
 
         let labelProf = ev.profissional ? (' [' + ev.profissional + ']') : '';
         const preview = detectarServicoPorRegras(ev.titulo, ev.profissional);
+        const cliExibicao = preview.clienteLimpo || ev.titulo;
         
         let badgeServico = '';
         if (preview.servico) {
@@ -1875,7 +1895,8 @@
           badgeServico = ' <span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #f87171; font-size: 11px; margin-left: 6px;">❓ Sem Serviço</span>';
         }
 
-        pill.innerHTML = '<strong>' + ev.horario + '</strong> - ' + ev.titulo + labelProf + badgeServico;
+        // Exibe o nome da cliente já limpo (sem repetir o serviço que já aparece na seta)
+        pill.innerHTML = '<strong>' + ev.horario + '</strong> - ' + cliExibicao + labelProf + badgeServico;
 
         // Destaque visual caso pertença à profissional ativa no modo balcão
         if (appState.usuarioAtual && appState.usuarioAtual.perfil && ev.profissional && appState.usuarioAtual.perfil.toLowerCase() === ev.profissional.toLowerCase()) {
