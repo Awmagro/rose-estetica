@@ -1563,22 +1563,13 @@
       }
 
       google.script.run
-        .withSuccessHandler(inicializarApp)
+        .withSuccessHandler(function(data) {
+          inicializarApp(data);
+          // Sincroniza a Google Agenda garantindo que todas as regras de traducao da planilha ja estao na memoria
+          sincronizarAgendaGoogle(true);
+        })
         .withFailureHandler(tratarErro)
         .getDadosIniciais();
-
-      try {
-        google.script.run
-          .withSuccessHandler(function(agendamentos) {
-            if (agendamentos && agendamentos.length > 0) {
-              appState.agendamentosHoje = agendamentos;
-              renderizarAgendaHoje();
-            }
-          })
-          .obterAgendamentosHoje();
-      } catch (eCal) {
-        console.log('Aviso Calendar sync:', eCal);
-      }
     }
 
     if (document.readyState === 'loading') {
@@ -1596,6 +1587,9 @@
 
         if (data.regrasDePara && data.regrasDePara.length > 0) {
           appState.regrasDePara = data.regrasDePara;
+          if (appState.agendamentosHoje && appState.agendamentosHoje.length > 0) {
+            renderizarAgendaHoje();
+          }
         }
         if (data.profissionais && data.profissionais.length > 0) {
           appState.profissionais = data.profissionais;
@@ -1645,27 +1639,31 @@
       }
     }
 
-    function sincronizarAgendaGoogle() {
+    function sincronizarAgendaGoogle(silencioso) {
       const dtEl = document.getElementById('dataAtendimento');
       const dataRef = dtEl && dtEl.value ? dtEl.value : '';
-      mostrarAlerta('Buscando agendamentos na Google Agenda...', true);
+      if (!silencioso) {
+        mostrarAlerta('Buscando agendamentos na Google Agenda...', true);
+      }
       if (typeof google === 'undefined' || !google.script || !google.script.run) {
-        mostrarAlerta('Ambiente local ou google.script indisponivel.', false);
+        if (!silencioso) mostrarAlerta('Ambiente local ou google.script indisponivel.', false);
         return;
       }
       google.script.run
         .withSuccessHandler(function(agendamentos) {
           appState.agendamentosHoje = agendamentos || [];
           renderizarAgendaHoje();
-          if (!agendamentos || agendamentos.length === 0) {
-            mostrarAlerta('Nenhum agendamento encontrado para esta data na Google Agenda.', true);
-          } else {
-            mostrarAlerta('&#9989; ' + agendamentos.length + ' agendamento(s) carregado(s) da Google Agenda!', true);
+          if (!silencioso) {
+            if (!agendamentos || agendamentos.length === 0) {
+              mostrarAlerta('Nenhum agendamento encontrado para esta data na Google Agenda.', true);
+            } else {
+              mostrarAlerta('&#9989; ' + agendamentos.length + ' agendamento(s) carregado(s) da Google Agenda!', true);
+            }
           }
         })
         .withFailureHandler(function(err) {
           console.error('Erro Calendar:', err);
-          mostrarAlerta('Aviso Google Agenda: Verifique autorizacao de acesso.', false);
+          if (!silencioso) mostrarAlerta('Aviso Google Agenda: Verifique autorizacao de acesso.', false);
         })
         .obterAgendamentosHoje(dataRef);
     }
@@ -1705,17 +1703,31 @@
       let valorSugerido = null;
       let profDetectada = profissional || '';
 
-      // 1. Se o título começar com o nome de alguma profissional (ex: "Paula - Maria", "Fabiana - Celia"), extrai a profissional
-      const regexProfPrefix = /^(paula|taty|tati|fabiana|mariana|rose)\s*[-:]\s*/i;
-      const matchProf = clienteLimpo.match(regexProfPrefix);
-      if (matchProf) {
-        let pNome = matchProf[1].toLowerCase();
+      // 1. Se o título começar ou terminar com o nome de alguma profissional (ex: "Paula - Maria", "Giovana alongamento fabiana" ou "dafiana")
+      const regexProfPrefix = /^(paula|taty|tati|fabiana|dafiana|mariana|rose)\s*[-:]\s*/i;
+      const matchPrefix = clienteLimpo.match(regexProfPrefix);
+      if (matchPrefix) {
+        let pNome = matchPrefix[1].toLowerCase();
         if (pNome === 'tati') pNome = 'taty';
+        if (pNome === 'dafiana') pNome = 'fabiana';
         pNome = pNome.charAt(0).toUpperCase() + pNome.slice(1);
         if (!profDetectada || profDetectada === 'Rose') {
           profDetectada = pNome;
         }
         clienteLimpo = clienteLimpo.replace(regexProfPrefix, '').trim();
+      }
+
+      const regexProfSuffix = /\s*[-:]?\s*(paula|taty|tati|fabiana|dafiana|mariana|rose)\s*$/i;
+      const matchSuffix = clienteLimpo.match(regexProfSuffix);
+      if (matchSuffix) {
+        let pNome = matchSuffix[1].toLowerCase();
+        if (pNome === 'tati') pNome = 'taty';
+        if (pNome === 'dafiana') pNome = 'fabiana';
+        pNome = pNome.charAt(0).toUpperCase() + pNome.slice(1);
+        if (!profDetectada || profDetectada === 'Rose') {
+          profDetectada = pNome;
+        }
+        clienteLimpo = clienteLimpo.replace(regexProfSuffix, '').trim();
       }
 
       const regras = appState.regrasDePara || [];
@@ -1844,6 +1856,7 @@
       if (!servicoDetectado) {
         const normLow = normalizarTexto(clienteLimpo);
         if (normLow.indexOf('crio') !== -1) { servicoDetectado = 'Criofrequência'; clienteLimpo = clienteLimpo.replace(/criofrequ[eê]ncia|crio/gi, ' '); }
+        else if (normLow.indexOf('alongamento') !== -1 || normLow.indexOf('unha em gel') !== -1 || /(^|[\s\-_/])gel($|[\s\-_/])/i.test(clienteLimpo)) { servicoDetectado = 'Alongamento em Gel'; clienteLimpo = clienteLimpo.replace(/alongamento(\s+em\s+gel)?|unhas?\s+em\s+gel|gel/gi, ' '); }
         else if (normLow.indexOf('peim') !== -1) { servicoDetectado = 'PEIM'; clienteLimpo = clienteLimpo.replace(/peim/gi, ' '); }
         else if (normLow.indexOf('skinbooster') !== -1) { servicoDetectado = 'Skinbooster'; clienteLimpo = clienteLimpo.replace(/skinbooster/gi, ' '); }
         else if (normLow.indexOf('manutencao') !== -1) { servicoDetectado = 'Manutenção'; clienteLimpo = clienteLimpo.replace(/manuten[cç][aã]o|manut/gi, ' '); }
@@ -1980,6 +1993,7 @@
           servicosMap.set('Manicure e Pedicure', 60);
         } else if (pLow === 'fabiana') {
           servicosMap.set('Manutenção', null);
+          servicosMap.set('Alongamento em Gel', null);
           servicosMap.set('Massagem', null);
           servicosMap.set('Drenagem Linfática', null);
           servicosMap.set('Massagem Modeladora', null);
