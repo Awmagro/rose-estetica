@@ -434,8 +434,8 @@
             <input type="number" id="numComanda" readonly placeholder="Carregando..." style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: var(--primary); padding: 8px 10px; font-size: 14px;" title="Número controlado automaticamente pelo sistema. Para continuar uma comanda, clique na aba Abertas.">
           </div>
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 11px; margin-bottom: 2px;">&#128197; Data:</label>
-            <input type="date" id="dataAtendimento" style="padding: 8px 10px; font-size: 14px;">
+            <label id="lblDataAtendimento" style="font-size: 11px; margin-bottom: 2px;">&#128274; Data: <span style="font-size: 10px; color: #64748b;">(Hoje)</span></label>
+            <input type="date" id="dataAtendimento" readonly tabindex="-1" style="padding: 8px 10px; font-size: 14px; background: #f1f5f9; cursor: not-allowed; pointer-events: none;" title="Data fixa no dia atual. Alteração restrita à Gerência.">
           </div>
         </div>
 
@@ -2217,10 +2217,13 @@
 
     function carregarComandaNaTela(c) {
       document.getElementById('numComanda').value = c.numComanda;
-      // Ao carregar comanda aberta, assegura que a data de atendimento/fechamento seja a data de HOJE,
-      // nunca retroagindo para a data da abertura parcial original
+      // Ao carregar comanda aberta, assegura data de hoje para profissionais comuns
       const elData = document.getElementById('dataAtendimento');
-      if (elData) elData.value = getHojeIso();
+      if (elData) {
+        if (!appState.modoGerencial || !elData.value) {
+          elData.value = getHojeIso();
+        }
+      }
       document.getElementById('cliente').value = c.cliente;
 
       appState.comandaAtualItens = (c.itens || []).map(it => ({
@@ -2248,7 +2251,7 @@
           document.getElementById('cliente').value = comandaExistente.cliente || '';
         }
         const elData = document.getElementById('dataAtendimento');
-        if (elData && !elData.value) {
+        if (elData && (!appState.modoGerencial || !elData.value)) {
           elData.value = getHojeIso();
         }
         appState.comandaAtualItens = (comandaExistente.itens || []).map(it => ({
@@ -2462,7 +2465,12 @@
     function gravarItem(finalizar) {
       const numComanda = document.getElementById('numComanda').value.trim();
       const elData = document.getElementById('dataAtendimento');
-      const data = (elData && elData.value) ? elData.value : getHojeIso();
+      let data = (elData && elData.value) ? elData.value : getHojeIso();
+      // REGRA DE SEGURANÇA ROSE ESTÉTICA: Profissionais comuns SEMPRE gravam na data de hoje
+      if (!appState.modoGerencial) {
+        data = getHojeIso();
+        if (elData) elData.value = data;
+      }
       const cliente = document.getElementById('cliente').value.trim();
       const profissional = document.getElementById('selProfissional').value;
       const descricao = document.getElementById('descricaoServico').value.trim() || 'Atendimento';
@@ -2569,7 +2577,8 @@
         valor: valorNum,
         formaPg: formaPgStr,
         troco: trocoVal,
-        finalizar: finalizar
+        finalizar: finalizar,
+        modoGerencial: !!appState.modoGerencial
       };
 
       google.script.run
@@ -2639,7 +2648,11 @@
     function limparFormularioComanda(proxima) {
       document.getElementById('numComanda').value = proxima || '';
       const elData = document.getElementById('dataAtendimento');
-      if (elData) elData.value = getHojeIso();
+      if (elData) {
+        if (!appState.modoGerencial || !elData.value) {
+          elData.value = getHojeIso();
+        }
+      }
       document.getElementById('cliente').value = '';
       document.getElementById('valorItem').value = '';
       document.getElementById('descricaoServico').value = '';
@@ -3199,6 +3212,34 @@
       const btn = document.getElementById('btnSairModo') || document.getElementById('btnAlternarModo');
       const cardFaturado = document.getElementById('cardKpiTotalFaturado');
       const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
+
+      // Controle de permissão de edição do campo de Data da Comanda
+      const elData = document.getElementById('dataAtendimento');
+      const lblData = document.getElementById('lblDataAtendimento');
+      if (elData) {
+        if (appState.modoGerencial) {
+          elData.readOnly = false;
+          elData.style.pointerEvents = 'auto';
+          elData.style.background = '#ffffff';
+          elData.style.cursor = 'default';
+          elData.removeAttribute('tabindex');
+          elData.title = 'Data da comanda (Editável exclusivamente pela Gerência)';
+          if (lblData) {
+            lblData.innerHTML = '&#128197; Data: <span style="font-size: 10px; color: #16a34a; font-weight: 700;">(Gerencial)</span>';
+          }
+        } else {
+          elData.value = getHojeIso();
+          elData.readOnly = true;
+          elData.style.pointerEvents = 'none';
+          elData.style.background = '#f1f5f9';
+          elData.style.cursor = 'not-allowed';
+          elData.setAttribute('tabindex', '-1');
+          elData.title = 'Data fixa no dia atual. Alteração restrita à Gerência.';
+          if (lblData) {
+            lblData.innerHTML = '&#128274; Data: <span style="font-size: 10px; color: #64748b;">(Hoje)</span>';
+          }
+        }
+      }
 
       if (appState.modoGerencial) {
         if (badge) {
