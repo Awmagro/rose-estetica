@@ -466,7 +466,7 @@
           </div>
           <div class="form-group" style="margin-bottom: 0;">
             <label style="font-size: 11px; margin-bottom: 2px;">Valor R$:</label>
-            <input type="number" step="0.01" id="valorItem" placeholder="0.00" style="padding: 8px 10px; font-size: 14px; font-weight: 700; color: var(--success);">
+            <input type="text" inputmode="decimal" id="valorItem" placeholder="0,00" onblur="formatarMoedaBlur(this)" style="padding: 8px 10px; font-size: 14px; font-weight: 700; color: var(--success);">
           </div>
         </div>
 
@@ -1939,16 +1939,25 @@
           document.getElementById('cliente').value = cli;
           if (servicoDetectado) {
             document.getElementById('descricaoServico').value = servicoDetectado;
+            const elVal = document.getElementById('valorItem');
             if (valorSugerido && Number(valorSugerido) > 0) {
-              document.getElementById('valorItem').value = formatarNumeroPt(valorSugerido);
+              const vNum = Number(valorSugerido);
+              if (elVal) {
+                if (elVal.type === 'number') {
+                  elVal.value = vNum.toFixed(2);
+                } else {
+                  elVal.value = formatarNumeroPt(vNum);
+                }
+              }
             } else {
-              document.getElementById('valorItem').value = '';
+              if (elVal) elVal.value = '';
             }
-            document.getElementById('valorItem').focus();
+            if (elVal) elVal.focus();
             mostrarAlerta('✅ Agendamento carregado: ' + cli + ' [' + servicoDetectado + ']' + (profFinal ? (' (' + profFinal + ')') : ''), true);
           } else {
             document.getElementById('descricaoServico').value = '';
-            document.getElementById('valorItem').value = '';
+            const elVal = document.getElementById('valorItem');
+            if (elVal) elVal.value = '';
             document.getElementById('descricaoServico').focus();
             mostrarAlerta('⚠️ Agendamento carregado: ' + cli + '. Por favor, selecione o procedimento abaixo.', false);
           }
@@ -1963,13 +1972,16 @@
       
       const filtradas = regras.filter(function(r) {
         const rp = (r.profissional || 'todas').toLowerCase().trim();
-        return rp === pLow || rp === 'todas';
+        const isTatyMatch = (rp === 'taty' || rp === 'tati') && (pLow === 'taty' || pLow === 'tati');
+        return rp === pLow || rp === 'todas' || isTatyMatch;
       });
 
       const servicosMap = new Map();
       filtradas.forEach(function(r) {
-        if (r.servico && !servicosMap.has(r.servico)) {
-          servicosMap.set(r.servico, r.valorPadrao || null);
+        if (r.servico) {
+          if (!servicosMap.has(r.servico) || (!servicosMap.get(r.servico) && r.valorPadrao)) {
+            servicosMap.set(r.servico, r.valorPadrao || null);
+          }
         }
       });
 
@@ -1978,26 +1990,25 @@
         if (pLow === 'rose') {
           servicosMap.set('Design de Sobrancelha', 45);
           servicosMap.set('Sobrancelha com Henna', 60);
-          servicosMap.set('Limpeza de Pele', 150);
+          servicosMap.set('Limpeza de Pele', 190);
           servicosMap.set('Criofrequência', 200);
-          servicosMap.set('PEIM', null);
-          servicosMap.set('Skinbooster', null);
+          servicosMap.set('PEIM', 120);
+          servicosMap.set('Skinbooster', 350);
         } else if (pLow === 'paula') {
-          servicosMap.set('Pedicure', 35);
-          servicosMap.set('Manicure', 30);
-          servicosMap.set('Manicure e Pedicure', 60);
-          servicosMap.set('Spa dos Pés', 50);
+          servicosMap.set('Pé', 45);
+          servicosMap.set('Mão', 40);
+          servicosMap.set('Pé e Mão', 85);
+          servicosMap.set('Spa dos Pés', 80);
         } else if (pLow === 'taty' || pLow === 'tati') {
-          servicosMap.set('Pedicure', 35);
-          servicosMap.set('Manicure', 30);
-          servicosMap.set('Manicure e Pedicure', 60);
+          servicosMap.set('Pé', 45);
+          servicosMap.set('Mão', 40);
+          servicosMap.set('Pé e Mão', 85);
         } else if (pLow === 'fabiana') {
+          servicosMap.set('Banho de Gel', null);
           servicosMap.set('Manutenção', null);
           servicosMap.set('Alongamento em Gel', null);
           servicosMap.set('Massagem', null);
           servicosMap.set('Drenagem Linfática', null);
-          servicosMap.set('Massagem Modeladora', null);
-          servicosMap.set('Limpeza de Pele', null);
         } else if (pLow === 'mariana') {
           servicosMap.set('Massagem', null);
           servicosMap.set('Drenagem Linfática', null);
@@ -2027,18 +2038,26 @@
         chip.className = 'chip-servico';
         
         let html = '<span>' + item.servico + '</span>';
-        if (item.valorPadrao && Number(item.valorPadrao) > 0) {
-          html += '<span class="chip-servico-preco">R$ ' + formatarNumeroPt(item.valorPadrao) + '</span>';
+        const vNum = (item.valorPadrao !== null && item.valorPadrao !== undefined && !isNaN(Number(item.valorPadrao))) ? Number(item.valorPadrao) : null;
+        if (vNum && vNum > 0) {
+          html += '<span class="chip-servico-preco">R$ ' + formatarNumeroPt(vNum) + '</span>';
         }
         chip.innerHTML = html;
 
         chip.onclick = function() {
           document.getElementById('descricaoServico').value = item.servico;
-          if (item.valorPadrao && Number(item.valorPadrao) > 0) {
-            document.getElementById('valorItem').value = formatarNumeroPt(item.valorPadrao);
-          } else {
-            document.getElementById('valorItem').value = '';
-            document.getElementById('valorItem').focus();
+          const elVal = document.getElementById('valorItem');
+          if (elVal) {
+            if (vNum && vNum > 0) {
+              if (elVal.type === 'number') {
+                elVal.value = vNum.toFixed(2);
+              } else {
+                elVal.value = formatarNumeroPt(vNum);
+              }
+            } else {
+              elVal.value = '';
+              elVal.focus();
+            }
           }
           document.querySelectorAll('#containerChipsServicos .chip-servico').forEach(function(c) {
             c.style.borderColor = '#d7bde2';
