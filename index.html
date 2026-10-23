@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <base target="_top">
@@ -1217,7 +1217,7 @@
         else if (metodo === 'proximoNumeroComanda') { }
         else if (metodo === 'salvarItemComanda') { payload.dados = args[0]; }
         else if (metodo === 'removerItemComandaAberta') { payload.numComanda = args[0]; payload.idRegistro = args[1]; payload.profissional = args[2]; payload.servico = args[3]; payload.valor = args[4]; }
-        else if (metodo === 'fecharComandaCompleta') { payload.numComanda = args[0]; payload.formaPg = args[1]; payload.trocoVal = args[2]; }
+        else if (metodo === 'fecharComandaCompleta') { payload.numComanda = args[0]; payload.formaPg = args[1]; payload.trocoVal = args[2]; payload.data = args[3]; }
         else if (metodo === 'montarResumoComanda') { payload.numComanda = args[0]; }
         else if (metodo === 'listarComandasAbertas') { }
         else if (metodo === 'getExtratoSemanal') { payload.semana = args[0]; payload.profissionalFiltro = args[1]; payload.modoGerencial = args[2]; }
@@ -2217,7 +2217,10 @@
 
     function carregarComandaNaTela(c) {
       document.getElementById('numComanda').value = c.numComanda;
-      if (c.data) document.getElementById('dataAtendimento').value = c.data;
+      // Ao carregar comanda aberta, assegura que a data de atendimento/fechamento seja a data de HOJE,
+      // nunca retroagindo para a data da abertura parcial original
+      const elData = document.getElementById('dataAtendimento');
+      if (elData) elData.value = getHojeIso();
       document.getElementById('cliente').value = c.cliente;
 
       appState.comandaAtualItens = (c.itens || []).map(it => ({
@@ -2244,8 +2247,9 @@
         if (!document.getElementById('cliente').value.trim()) {
           document.getElementById('cliente').value = comandaExistente.cliente || '';
         }
-        if (comandaExistente.data) {
-          document.getElementById('dataAtendimento').value = comandaExistente.data;
+        const elData = document.getElementById('dataAtendimento');
+        if (elData && !elData.value) {
+          elData.value = getHojeIso();
         }
         appState.comandaAtualItens = (comandaExistente.itens || []).map(it => ({
           id: it.id,
@@ -2457,7 +2461,8 @@
 
     function gravarItem(finalizar) {
       const numComanda = document.getElementById('numComanda').value.trim();
-      const data = document.getElementById('dataAtendimento').value;
+      const elData = document.getElementById('dataAtendimento');
+      const data = (elData && elData.value) ? elData.value : getHojeIso();
       const cliente = document.getElementById('cliente').value.trim();
       const profissional = document.getElementById('selProfissional').value;
       const descricao = document.getElementById('descricaoServico').value.trim() || 'Atendimento';
@@ -2633,6 +2638,8 @@
 
     function limparFormularioComanda(proxima) {
       document.getElementById('numComanda').value = proxima || '';
+      const elData = document.getElementById('dataAtendimento');
+      if (elData) elData.value = getHojeIso();
       document.getElementById('cliente').value = '';
       document.getElementById('valorItem').value = '';
       document.getElementById('descricaoServico').value = '';
