@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <base target="_top">
@@ -177,6 +177,41 @@
       transition: 0.2s;
     }
     .agenda-pill:hover { background: #e67e22; color: #fff; }
+
+    /* Chips Rapidos de Servicos */
+    .chip-servico {
+      background: #f5eef8;
+      color: var(--primary-dark);
+      border: 1px solid #d7bde2;
+      border-radius: 16px;
+      padding: 5px 11px;
+      font-size: 11.5px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.15s ease-in-out;
+      user-select: none;
+    }
+    .chip-servico:hover, .chip-servico:active {
+      background: var(--primary);
+      color: #fff;
+      border-color: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+    .chip-servico-preco {
+      background: rgba(108, 52, 131, 0.12);
+      color: var(--primary-dark);
+      border-radius: 10px;
+      padding: 1px 6px;
+      font-size: 10.5px;
+      font-weight: 700;
+    }
+    .chip-servico:hover .chip-servico-preco {
+      background: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
 
     /* Itens da Comanda Table */
     .tabela-itens { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -387,6 +422,7 @@
           <span>Identificação da Comanda</span>
           <div style="display: flex; gap: 6px; flex-wrap: wrap;">
             <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 8px;" onclick="sincronizarAgendaGoogle()">&#128197; Google Agenda</button>
+            <button type="button" class="btn btn-primary" style="font-size: 11px; padding: 5px 10px; background: var(--primary); color: #fff;" onclick="abrirModalNovoAgendamento()">&#10133; Agendar</button>
             <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="limparTudoParaNovaComanda()">&#10024; Nova Comanda</button>
           </div>
         </div>
@@ -420,7 +456,7 @@
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
           <div class="form-group" style="margin-bottom: 0;">
             <label style="font-size: 11px; margin-bottom: 2px;">Profissional:</label>
-            <select id="selProfissional" style="padding: 8px 10px; font-size: 14px;">
+            <select id="selProfissional" onchange="renderizarChipsServicos(this.value)" style="padding: 8px 10px; font-size: 14px;">
               <option value="Paula">Paula</option>
               <option value="Taty">Taty</option>
               <option value="Fabiana">Fabiana</option>
@@ -441,14 +477,25 @@
           <datalist id="listaServicosSugeridos">
             <option value="Manicure"></option>
             <option value="Pedicure"></option>
+            <option value="Manicure e Pedicure"></option>
             <option value="Escova"></option>
             <option value="Corte"></option>
             <option value="Coloração"></option>
             <option value="Massagem"></option>
+            <option value="Drenagem Linfática"></option>
             <option value="Limpeza de Pele"></option>
             <option value="Depilação"></option>
-            <option value="Sobrancelha"></option>
+            <option value="Design de Sobrancelha"></option>
+            <option value="Sobrancelha com Henna"></option>
+            <option value="Criofrequência"></option>
+            <option value="Manutenção"></option>
           </datalist>
+
+          <!-- Chips Rapidos de Procedimento da Profissional Selecionada -->
+          <div style="margin-top: 8px;">
+            <div style="font-size: 10px; color: var(--gray-text); font-weight: 700; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">⚡ Serviços Rápidos da Profissional:</div>
+            <div id="containerChipsServicos" style="display: flex; flex-wrap: wrap; gap: 6px;"></div>
+          </div>
         </div>
 
         <button id="btnAddItem" class="btn btn-secondary btn-block" style="padding: 10px; font-size: 14px; font-weight: 600;" onclick="gravarItem(false)">
@@ -1052,6 +1099,73 @@
     </div>
   </div>
 
+  <!-- MODAL DE NOVO AGENDAMENTO GOOGLE AGENDA -->
+  <div id="modalNovoAgendamento" style="display: none; position: fixed; z-index: 99999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.65); align-items: center; justify-content: center;">
+    <div style="background: #ffffff; border-radius: 14px; padding: 20px; max-width: 440px; width: 92%; box-shadow: 0 12px 35px rgba(0,0,0,0.3); font-family: 'Inter', sans-serif; max-height: 90vh; overflow-y: auto;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+        <h3 style="color: var(--primary-dark); font-size: 16px; margin: 0; font-weight: 700;">&#128197; Novo Agendamento na Google Agenda</h3>
+        <button type="button" onclick="fecharModalNovoAgendamento()" style="background: none; border: none; font-size: 22px; cursor: pointer; color: var(--gray-text);">&times;</button>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 600;">Data:</label>
+          <input type="date" id="agData" style="padding: 7px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px;">
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 600;">Horário:</label>
+          <input type="time" id="agHoraInicio" style="padding: 7px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px;">
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 600;">Profissional:</label>
+          <select id="agProfissional" onchange="atualizarChipsModalAgendamento()" style="padding: 7px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px;">
+            <option value="Paula">Paula</option>
+            <option value="Taty">Taty</option>
+            <option value="Fabiana">Fabiana</option>
+            <option value="Mariana">Mariana</option>
+            <option value="Rose">Rose</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom: 0;">
+          <label style="font-size: 11px; font-weight: 600;">Duração estimada:</label>
+          <select id="agDuracao" style="padding: 7px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px;">
+            <option value="30">30 minutos</option>
+            <option value="45">45 minutos</option>
+            <option value="60" selected>1 hora (60 min)</option>
+            <option value="90">1h30 (90 min)</option>
+            <option value="120">2 horas (120 min)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label style="font-size: 11px; font-weight: 600;">Nome da Cliente:</label>
+        <input type="text" id="agCliente" placeholder="Ex: Celia, Maria Silva..." style="padding: 8px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px; box-sizing: border-box;">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label style="font-size: 11px; font-weight: 600;">Procedimento / Serviço:</label>
+        <input type="text" id="agServico" placeholder="Ex: Manutenção, Sobrancelha, etc." style="padding: 8px 10px; font-size: 13px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px; box-sizing: border-box;">
+        <div style="font-size: 10px; color: var(--gray-text); font-weight: 600; margin-top: 6px; margin-bottom: 4px;">⚡ Toque para selecionar rápido:</div>
+        <div id="agChipsServicos" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
+      </div>
+
+      <div class="form-group" style="margin-bottom: 12px;">
+        <label style="font-size: 11px; font-weight: 600;">Observações (opcional):</label>
+        <input type="text" id="agObs" placeholder="Ex: Trazer referências" style="padding: 7px 10px; font-size: 12px; width: 100%; border: 1px solid var(--gray-border); border-radius: 6px; box-sizing: border-box;">
+      </div>
+
+      <div id="agMsgErro" style="display: none; color: #dc2626; font-size: 12px; font-weight: bold; margin-bottom: 10px; text-align: center;"></div>
+
+      <div style="display: flex; gap: 8px;">
+        <button type="button" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 13px;" onclick="fecharModalNovoAgendamento()">Cancelar</button>
+        <button type="button" id="btnSalvarAgendamento" class="btn btn-primary" style="flex: 1.3; padding: 10px; font-size: 13px; background: var(--primary); font-weight: 700;" onclick="salvarNovoAgendamento()">Salvar na Agenda</button>
+      </div>
+    </div>
+  </div>
 
   <!-- CUPOM TERMICO (EPSON TM-T20 - 80mm) -->
   <div id="cupomPrint" class="cupom-print">
@@ -1079,7 +1193,7 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
           console.log('[PWA] Service Worker registrado com sucesso:', reg.scope);
-          // Força verificação imediata de nova versão no servidor
+          // Forca verificacao imediata de nova versao no servidor
           if (typeof reg.update === 'function') reg.update();
         }).catch(err => {
           console.log('[PWA] Falha ao registrar Service Worker:', err);
@@ -1099,6 +1213,7 @@
         let payload = { acao: metodo };
         if (metodo === 'getDadosIniciais') { }
         else if (metodo === 'obterAgendamentosHoje') { payload.data = args[0]; }
+        else if (metodo === 'criarAgendamentoGoogle') { payload.dados = args[0]; }
         else if (metodo === 'proximoNumeroComanda') { }
         else if (metodo === 'salvarItemComanda') { payload.dados = args[0]; }
         else if (metodo === 'removerItemComandaAberta') { payload.numComanda = args[0]; payload.idRegistro = args[1]; payload.profissional = args[2]; payload.servico = args[3]; payload.valor = args[4]; }
@@ -1158,7 +1273,6 @@
       console.log('[PWA] Adaptador Google Apps Script inicializado em modo standalone HTTP API.');
     }
     // =================================================
-
     function formatarNumeroPt(val) {
       if (val === null || val === undefined || val === '') return '0,00';
       let num;
@@ -1518,6 +1632,7 @@
           if (appState.profissionalLogada) {
             selProf.value = appState.profissionalLogada;
           }
+          renderizarChipsServicos(selProf.value);
         }
         popularSelectExtratoProf(appState.modoGerencial);
 
@@ -1555,62 +1670,182 @@
         .obterAgendamentosHoje(dataRef);
     }
 
+    function normalizarTexto(txt) {
+      if (!txt) return '';
+      return String(txt)
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+    }
+
     function detectarServicoPorRegras(textoAgenda, profissional) {
-      if (!textoAgenda) return { servico: '', valor: null, clienteLimpo: '' };
+      if (!textoAgenda) return { servico: '', valor: null, clienteLimpo: '', profissional: '' };
       
       let clienteLimpo = String(textoAgenda).trim();
       let servicoDetectado = '';
       let valorSugerido = null;
-      
+      let profDetectada = profissional || '';
+
+      // 1. Se o título começar com o nome de alguma profissional (ex: "Paula - Maria", "Fabiana - Celia"), extrai a profissional
+      const regexProfPrefix = /^(paula|taty|tati|fabiana|mariana|rose)\s*[-:]\s*/i;
+      const matchProf = clienteLimpo.match(regexProfPrefix);
+      if (matchProf) {
+        let pNome = matchProf[1].toLowerCase();
+        if (pNome === 'tati') pNome = 'taty';
+        pNome = pNome.charAt(0).toUpperCase() + pNome.slice(1);
+        if (!profDetectada || profDetectada === 'Rose') {
+          profDetectada = pNome;
+        }
+        clienteLimpo = clienteLimpo.replace(regexProfPrefix, '').trim();
+      }
+
       const regras = appState.regrasDePara || [];
-      if (regras.length > 0) {
-        const profNome = (profissional || '').toLowerCase().trim();
-        // Filtra regras da profissional ou "Todas", e ordena pelos termos mais longos primeiro (ex: "SH" antes de "S")
-        const regrasFiltradas = regras.filter(r => {
-          const rp = (r.profissional || 'todas').toLowerCase().trim();
-          return rp === 'todas' || rp === profNome;
-        }).sort((a, b) => b.termo.length - a.termo.length);
+      const profNome = (profDetectada || '').toLowerCase().trim();
 
-        for (const reg of regrasFiltradas) {
-          const termo = String(reg.termo || '').trim();
-          if (!termo) continue;
+      // Regras estritas da profissional (ou "Todas")
+      const regrasProf = regras.filter(function(r) {
+        const rp = (r.profissional || 'todas').toLowerCase().trim();
+        return rp === 'todas' || rp === profNome;
+      });
 
-          // Cria regex com delimitadores de palavra, espaco ou pontuacao
-          const termoEscapado = termo.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-          const regex = new RegExp('(^|[\\s\\-_/(),])' + termoEscapado + '($|[\\s\\-_/(),])', 'i');
+      // Função auxiliar para testar se um termo bate em alguma regra
+      function buscarRegraPorTermo(termoCandidato) {
+        const normCand = normalizarTexto(termoCandidato);
+        if (!normCand) return null;
 
-          if (regex.test(clienteLimpo)) {
-            servicoDetectado = reg.servico;
-            valorSugerido = reg.valorPadrao || null;
+        for (let i = 0; i < regrasProf.length; i++) {
+          const reg = regrasProf[i];
+          const listaTermos = reg.termos && reg.termos.length > 0 ? reg.termos : [reg.termo];
+          for (let j = 0; j < listaTermos.length; j++) {
+            const t = normalizarTexto(listaTermos[j]);
+            if (t && t === normCand) {
+              return reg;
+            }
+          }
+        }
+        return null;
+      }
+
+      // PASSO 1: Delimitadores explícitos Colchetes [...] ou Parênteses (...)
+      const matchBracket = clienteLimpo.match(/\[(.*?)\]/) || clienteLimpo.match(/\((.*?)\)/);
+      if (matchBracket && matchBracket[1].trim()) {
+        const tag = matchBracket[1].trim();
+        const regraEncontrada = buscarRegraPorTermo(tag);
+        if (regraEncontrada) {
+          servicoDetectado = regraEncontrada.servico;
+          valorSugerido = regraEncontrada.valorPadrao || null;
+        } else {
+          // Se estava dentro de colchetes mas não tem regra cadastrada, assume a tag diretamente como serviço
+          servicoDetectado = tag;
+        }
+        // Remove os colchetes/parênteses do nome da cliente
+        clienteLimpo = clienteLimpo.replace(matchBracket[0], ' ').trim();
+      }
+
+      // PASSO 2: Delimitador de Hífen " - " ou Dois Pontos " : " (caso ainda não detectado)
+      if (!servicoDetectado && (clienteLimpo.indexOf(' - ') !== -1 || clienteLimpo.indexOf(' : ') !== -1)) {
+        const partes = clienteLimpo.split(/\s*[-:]\s*/);
+        if (partes.length === 2) {
+          const regraLado2 = buscarRegraPorTermo(partes[1]);
+          const regraLado1 = buscarRegraPorTermo(partes[0]);
+          if (regraLado2) {
+            servicoDetectado = regraLado2.servico;
+            valorSugerido = regraLado2.valorPadrao || null;
+            clienteLimpo = partes[0].trim();
+          } else if (regraLado1) {
+            servicoDetectado = regraLado1.servico;
+            valorSugerido = regraLado1.valorPadrao || null;
+            clienteLimpo = partes[1].trim();
+          }
+        }
+      }
+
+      // PASSO 3: Busca no texto livre contra o vocabulário de termos da profissional (ex: "Celia Manutenção", "Maria Silva S")
+      if (!servicoDetectado && regrasProf.length > 0) {
+        const candidatos = [];
+        regrasProf.forEach(function(r) {
+          const termosList = r.termos && r.termos.length > 0 ? r.termos : [r.termo];
+          termosList.forEach(function(t) {
+            const nt = normalizarTexto(t);
+            if (nt) {
+              candidatos.push({
+                termoOriginal: t,
+                normTermo: nt,
+                servico: r.servico,
+                valorPadrao: r.valorPadrao || null
+              });
+            }
+          });
+        });
+
+        // Ordena: termos mais longos primeiro (ex: "sobrancelha com henna" antes de "sobrancelha", "sh" antes de "s")
+        candidatos.sort(function(a, b) {
+          return b.normTermo.length - a.normTermo.length;
+        });
+
+        const normCliente = normalizarTexto(clienteLimpo);
+
+        for (let i = 0; i < candidatos.length; i++) {
+          const cand = candidatos[i];
+
+          // Tratamento especial e seguro para siglas de 1 letra (ex: "s" da Rose):
+          if (cand.normTermo.length === 1) {
+            // "s" só é aceito como Sobrancelha se a profissional for a Rose!
+            if (profNome !== 'rose' && profNome !== 'todas') {
+              continue;
+            }
+            // Se no texto original tiver um ponto (ex: "Maria S."), é abreviação de sobrenome (Silva), NÃO serviço!
+            if (/[a-zA-Z]\s+[sS]\./i.test(clienteLimpo)) {
+              continue;
+            }
+          }
+
+          // Cria regex com delimitadores de palavra no texto normalizado
+          const termoEsc = cand.normTermo.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
+          const regexTermo = new RegExp('(^|[\\s\\-_/(),:])' + termoEsc + '($|[\\s\\-_/(),:])', 'i');
+
+          if (regexTermo.test(normCliente)) {
+            servicoDetectado = cand.servico;
+            valorSugerido = cand.valorPadrao;
+
             // Remove o termo do nome da cliente
-            clienteLimpo = clienteLimpo.replace(regex, ' ').replace(/\s+/g, ' ').trim();
+            try {
+              const regexRemover = new RegExp('(^|[\\s\\-_/(),:])' + termoEsc + '($|[\\s\\-_/(),:])', 'i');
+              clienteLimpo = clienteLimpo.replace(regexRemover, ' ').trim();
+            } catch (eRegex) {
+              clienteLimpo = clienteLimpo.replace(cand.termoOriginal, ' ').trim();
+            }
             break;
           }
         }
       }
 
-      // Se nao encontrou por regra da planilha, faz um fallback para termos basicos comuns
+      // PASSO 4: Fallback adicional para termos estéticos comuns
       if (!servicoDetectado) {
-        const txtLow = clienteLimpo.toLowerCase();
-        if (txtLow.includes('crio')) servicoDetectado = 'Criofrequência';
-        else if (txtLow.includes('peim')) servicoDetectado = 'PEIM';
-        else if (txtLow.includes('skinbooster')) servicoDetectado = 'Skinbooster';
-        else if (txtLow.includes('pedicure') || txtLow.includes('pé') || txtLow.includes('pe')) servicoDetectado = 'Pedicure';
-        else if (txtLow.includes('manicure') || txtLow.includes('mão') || txtLow.includes('mao')) servicoDetectado = 'Manicure';
-        else if (txtLow.includes('massagem')) servicoDetectado = 'Massagem';
-        else if (txtLow.includes('limpeza')) servicoDetectado = 'Limpeza de Pele';
-        else if (txtLow.includes('sobrancelha')) servicoDetectado = 'Design de Sobrancelha';
-
-        clienteLimpo = clienteLimpo.replace(/skinbooster|peim|criofrequencia|crio|manicure|pedicure|mão|mao|pé|pe/gi, '');
+        const normLow = normalizarTexto(clienteLimpo);
+        if (normLow.indexOf('crio') !== -1) { servicoDetectado = 'Criofrequência'; clienteLimpo = clienteLimpo.replace(/criofrequ[eê]ncia|crio/gi, ' '); }
+        else if (normLow.indexOf('peim') !== -1) { servicoDetectado = 'PEIM'; clienteLimpo = clienteLimpo.replace(/peim/gi, ' '); }
+        else if (normLow.indexOf('skinbooster') !== -1) { servicoDetectado = 'Skinbooster'; clienteLimpo = clienteLimpo.replace(/skinbooster/gi, ' '); }
+        else if (normLow.indexOf('manutencao') !== -1) { servicoDetectado = 'Manutenção'; clienteLimpo = clienteLimpo.replace(/manuten[cç][aã]o|manut/gi, ' '); }
+        else if (normLow.indexOf('pedicure') !== -1 || /(^|[\s\-_/])p[eé]($|[\s\-_/])/i.test(clienteLimpo)) { servicoDetectado = 'Pedicure'; clienteLimpo = clienteLimpo.replace(/pedicure|p[eé]/gi, ' '); }
+        else if (normLow.indexOf('manicure') !== -1 || /(^|[\s\-_/])m[aã]o($|[\s\-_/])/i.test(clienteLimpo)) { servicoDetectado = 'Manicure'; clienteLimpo = clienteLimpo.replace(/manicure|m[aã]o/gi, ' '); }
+        else if (normLow.indexOf('massagem') !== -1) { servicoDetectado = 'Massagem'; clienteLimpo = clienteLimpo.replace(/massagem/gi, ' '); }
+        else if (normLow.indexOf('limpeza') !== -1) { servicoDetectado = 'Limpeza de Pele'; clienteLimpo = clienteLimpo.replace(/limpeza\s*(de\s*pele)?/gi, ' '); }
+        else if (normLow.indexOf('sobrancelha') !== -1) { servicoDetectado = 'Design de Sobrancelha'; clienteLimpo = clienteLimpo.replace(/sobrancelha/gi, ' '); }
       }
 
-      // Limpeza final de pontuacoes residuais do nome do cliente
-      clienteLimpo = clienteLimpo.replace(/^[-/(),\s]+|[-/(),\s]+$/g, '').trim();
+      // PASSO 5: Limpeza estrita de pontuações residuais no nome da cliente
+      clienteLimpo = clienteLimpo.replace(/^[\s\-_/(),:\[\]]+|[\s\-_/(),:\[\]]+$/g, '').replace(/\s{2,}/g, ' ').trim();
+      if (!clienteLimpo) {
+        clienteLimpo = String(textoAgenda).trim();
+      }
 
       return {
         servico: servicoDetectado,
         valor: valorSugerido,
-        clienteLimpo: clienteLimpo
+        clienteLimpo: clienteLimpo,
+        profissional: profDetectada
       };
     }
 
@@ -1631,10 +1866,18 @@
 
         let labelProf = ev.profissional ? (' [' + ev.profissional + ']') : '';
         const preview = detectarServicoPorRegras(ev.titulo, ev.profissional);
-        const badgeServico = preview.servico ? (' → ' + preview.servico) : '';
-        pill.innerText = ev.horario + ' - ' + ev.titulo + labelProf + badgeServico;
+        
+        let badgeServico = '';
+        if (preview.servico) {
+          badgeServico = ' <span style="color: var(--primary-dark); font-weight: 700; margin-left: 4px;">→ ' + preview.servico + '</span>';
+        } else {
+          // Destaca em vermelho com ? quando não identificar o serviço (conforme orientação do usuário)
+          badgeServico = ' <span style="background: #fee2e2; color: #dc2626; padding: 2px 6px; border-radius: 4px; font-weight: bold; border: 1px solid #f87171; font-size: 11px; margin-left: 6px;">❓ Sem Serviço</span>';
+        }
 
-        // Destaque visual caso pertenca a profissional ativa no modo balcao
+        pill.innerHTML = '<strong>' + ev.horario + '</strong> - ' + ev.titulo + labelProf + badgeServico;
+
+        // Destaque visual caso pertença à profissional ativa no modo balcão
         if (appState.usuarioAtual && appState.usuarioAtual.perfil && ev.profissional && appState.usuarioAtual.perfil.toLowerCase() === ev.profissional.toLowerCase()) {
           pill.style.borderColor = 'var(--primary)';
           pill.style.background = '#f5eef8';
@@ -1647,28 +1890,259 @@
           const cli = resultado.clienteLimpo || ev.titulo;
           const servicoDetectado = resultado.servico || '';
           const valorSugerido = resultado.valor;
+          const profFinal = resultado.profissional || ev.profissional;
 
-          // Define profissional correspondente
-          if (ev.profissional) {
+          // Define profissional correspondente e atualiza chips rápidos
+          if (profFinal) {
             const selProf = document.getElementById('selProfissional');
-            if (selProf) selProf.value = ev.profissional;
+            if (selProf) {
+              selProf.value = profFinal;
+              renderizarChipsServicos(profFinal);
+            }
           }
 
-          // Preenche cliente e servico
+          // Preenche cliente e serviço
           document.getElementById('cliente').value = cli;
           if (servicoDetectado) {
             document.getElementById('descricaoServico').value = servicoDetectado;
+            if (valorSugerido && Number(valorSugerido) > 0) {
+              document.getElementById('valorItem').value = formatarNumeroPt(valorSugerido);
+            } else {
+              document.getElementById('valorItem').value = '';
+            }
+            document.getElementById('valorItem').focus();
+            mostrarAlerta('✅ Agendamento carregado: ' + cli + ' [' + servicoDetectado + ']' + (profFinal ? (' (' + profFinal + ')') : ''), true);
+          } else {
+            document.getElementById('descricaoServico').value = '';
+            document.getElementById('valorItem').value = '';
+            document.getElementById('descricaoServico').focus();
+            mostrarAlerta('⚠️ Agendamento carregado: ' + cli + '. Por favor, selecione o procedimento abaixo.', false);
           }
-          if (valorSugerido && Number(valorSugerido) > 0) {
-            document.getElementById('valorItem').value = formatarNumeroPt(valorSugerido);
-          }
-
-          document.getElementById('valorItem').focus();
-          const detalheMsg = servicoDetectado ? (' [' + servicoDetectado + ']') : '';
-          mostrarAlerta('✅ Agendamento carregado: ' + cli + detalheMsg + (ev.profissional ? (' (' + ev.profissional + ')') : ''), true);
         };
         container.appendChild(pill);
       });
+    }
+
+    function obterServicosPorProfissional(profNome) {
+      const pLow = (profNome || '').toLowerCase().trim();
+      const regras = appState.regrasDePara || [];
+      
+      const filtradas = regras.filter(function(r) {
+        const rp = (r.profissional || 'todas').toLowerCase().trim();
+        return rp === pLow || rp === 'todas';
+      });
+
+      const servicosMap = new Map();
+      filtradas.forEach(function(r) {
+        if (r.servico && !servicosMap.has(r.servico)) {
+          servicosMap.set(r.servico, r.valorPadrao || null);
+        }
+      });
+
+      // Fallbacks específicos por profissional
+      if (servicosMap.size === 0) {
+        if (pLow === 'rose') {
+          servicosMap.set('Design de Sobrancelha', 45);
+          servicosMap.set('Sobrancelha com Henna', 60);
+          servicosMap.set('Limpeza de Pele', 150);
+          servicosMap.set('Criofrequência', 200);
+          servicosMap.set('PEIM', null);
+          servicosMap.set('Skinbooster', null);
+        } else if (pLow === 'paula') {
+          servicosMap.set('Pedicure', 35);
+          servicosMap.set('Manicure', 30);
+          servicosMap.set('Manicure e Pedicure', 60);
+          servicosMap.set('Spa dos Pés', 50);
+        } else if (pLow === 'taty' || pLow === 'tati') {
+          servicosMap.set('Pedicure', 35);
+          servicosMap.set('Manicure', 30);
+          servicosMap.set('Manicure e Pedicure', 60);
+        } else if (pLow === 'fabiana') {
+          servicosMap.set('Manutenção', null);
+          servicosMap.set('Massagem', null);
+          servicosMap.set('Drenagem Linfática', null);
+          servicosMap.set('Massagem Modeladora', null);
+          servicosMap.set('Limpeza de Pele', null);
+        } else if (pLow === 'mariana') {
+          servicosMap.set('Massagem', null);
+          servicosMap.set('Drenagem Linfática', null);
+        }
+      }
+
+      const res = [];
+      servicosMap.forEach(function(valor, serv) {
+        res.push({ servico: serv, valorPadrao: valor });
+      });
+      return res;
+    }
+
+    function renderizarChipsServicos(profNome) {
+      const container = document.getElementById('containerChipsServicos');
+      if (!container) return;
+      container.innerHTML = '';
+
+      const lista = obterServicosPorProfissional(profNome);
+      if (!lista || lista.length === 0) {
+        container.innerHTML = '<span style="font-size: 11px; color: var(--gray-text); font-style: italic;">Nenhum serviço frequente configurado.</span>';
+        return;
+      }
+
+      lista.forEach(function(item) {
+        const chip = document.createElement('div');
+        chip.className = 'chip-servico';
+        
+        let html = '<span>' + item.servico + '</span>';
+        if (item.valorPadrao && Number(item.valorPadrao) > 0) {
+          html += '<span class="chip-servico-preco">R$ ' + formatarNumeroPt(item.valorPadrao) + '</span>';
+        }
+        chip.innerHTML = html;
+
+        chip.onclick = function() {
+          document.getElementById('descricaoServico').value = item.servico;
+          if (item.valorPadrao && Number(item.valorPadrao) > 0) {
+            document.getElementById('valorItem').value = formatarNumeroPt(item.valorPadrao);
+          } else {
+            document.getElementById('valorItem').value = '';
+            document.getElementById('valorItem').focus();
+          }
+          document.querySelectorAll('#containerChipsServicos .chip-servico').forEach(function(c) {
+            c.style.borderColor = '#d7bde2';
+            c.style.background = '#f5eef8';
+          });
+          chip.style.borderColor = 'var(--primary)';
+          chip.style.background = '#e8daef';
+        };
+
+        container.appendChild(chip);
+      });
+    }
+
+    function atualizarChipsModalAgendamento() {
+      const container = document.getElementById('agChipsServicos');
+      const selProf = document.getElementById('agProfissional');
+      if (!container || !selProf) return;
+      container.innerHTML = '';
+
+      const lista = obterServicosPorProfissional(selProf.value);
+      lista.forEach(function(item) {
+        const chip = document.createElement('div');
+        chip.className = 'chip-servico';
+        chip.style.fontSize = '11px';
+        chip.style.padding = '3px 8px';
+        chip.innerText = item.servico;
+        chip.onclick = function() {
+          document.getElementById('agServico').value = item.servico;
+          document.querySelectorAll('#agChipsServicos .chip-servico').forEach(function(c) {
+            c.style.borderColor = '#d7bde2';
+            c.style.background = '#f5eef8';
+          });
+          chip.style.borderColor = 'var(--primary)';
+          chip.style.background = '#e8daef';
+        };
+        container.appendChild(chip);
+      });
+    }
+
+    function abrirModalNovoAgendamento() {
+      const modal = document.getElementById('modalNovoAgendamento');
+      if (!modal) return;
+      
+      const dtEl = document.getElementById('dataAtendimento');
+      const hojeStr = dtEl && dtEl.value ? dtEl.value : new Date().toISOString().split('T')[0];
+      document.getElementById('agData').value = hojeStr;
+      
+      const agora = new Date();
+      let proxHora = agora.getHours() + 1;
+      if (proxHora > 20) proxHora = 9;
+      const horaStr = String(proxHora).padStart(2, '0') + ':00';
+      document.getElementById('agHoraInicio').value = horaStr;
+      
+      const selProf = document.getElementById('selProfissional');
+      if (selProf && selProf.value) {
+        document.getElementById('agProfissional').value = selProf.value;
+      }
+      
+      document.getElementById('agCliente').value = (document.getElementById('cliente').value || '').trim();
+      document.getElementById('agServico').value = (document.getElementById('descricaoServico').value || '').trim();
+      document.getElementById('agObs').value = '';
+      document.getElementById('agMsgErro').style.display = 'none';
+
+      atualizarChipsModalAgendamento();
+      modal.style.display = 'flex';
+      document.getElementById('agCliente').focus();
+    }
+
+    function fecharModalNovoAgendamento() {
+      const modal = document.getElementById('modalNovoAgendamento');
+      if (modal) modal.style.display = 'none';
+    }
+
+    function salvarNovoAgendamento() {
+      const cliente = document.getElementById('agCliente').value.trim();
+      const servico = document.getElementById('agServico').value.trim();
+      const data = document.getElementById('agData').value;
+      const horaInicio = document.getElementById('agHoraInicio').value;
+      const duracao = document.getElementById('agDuracao').value;
+      const profissional = document.getElementById('agProfissional').value;
+      const obs = document.getElementById('agObs').value.trim();
+      const msgErro = document.getElementById('agMsgErro');
+
+      if (!cliente) {
+        msgErro.innerText = 'Por favor, informe o nome da cliente.';
+        msgErro.style.display = 'block';
+        return;
+      }
+      if (!data || !horaInicio) {
+        msgErro.innerText = 'Data e horário de início são obrigatórios.';
+        msgErro.style.display = 'block';
+        return;
+      }
+
+      msgErro.style.display = 'none';
+      const btn = document.getElementById('btnSalvarAgendamento');
+      btn.disabled = true;
+      btn.innerText = 'Salvando...';
+
+      const dados = {
+        cliente: cliente,
+        servico: servico,
+        data: data,
+        horaInicio: horaInicio,
+        duracaoMinutos: duracao,
+        profissional: profissional,
+        observacao: obs
+      };
+
+      mostrarAlerta('Salvando agendamento na Google Agenda...', true);
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        btn.disabled = false;
+        btn.innerText = 'Salvar na Agenda';
+        mostrarAlerta('Ambiente local ou google.script indisponível.', false);
+        return;
+      }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          btn.disabled = false;
+          btn.innerText = 'Salvar na Agenda';
+          if (res && res.status === 'sucesso') {
+            fecharModalNovoAgendamento();
+            mostrarAlerta('✅ ' + res.mensagem, true);
+            sincronizarAgendaGoogle();
+          } else {
+            msgErro.innerText = (res && res.mensagem) || 'Erro ao salvar agendamento.';
+            msgErro.style.display = 'block';
+          }
+        })
+        .withFailureHandler(function(err) {
+          btn.disabled = false;
+          btn.innerText = 'Salvar na Agenda';
+          console.error('Erro ao salvar agendamento:', err);
+          msgErro.innerText = 'Erro ao comunicar com Google Agenda: ' + err.message;
+          msgErro.style.display = 'block';
+        })
+        .criarAgendamentoGoogle(dados);
     }
 
     function renderizarComandasAbertas() {
