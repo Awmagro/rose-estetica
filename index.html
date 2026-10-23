@@ -1031,7 +1031,7 @@
 
       <!-- Box com Resumo da Comanda Selecionada -->
       <div id="boxDetalhesComandaCancelar" style="background: #fdf2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 12px; margin-bottom: 14px;">
-        <div style="font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px;" id="lblCancNumComanda">Comanda #...</div>
+        <div style="font-size: 13px; font-weight: 700; color: #991b1b; margin-bottom: 6px;" id="lblCancNumComanda">Comanda ...</div>
         <div style="font-size: 12px; color: var(--dark); margin-bottom: 3px;" id="lblCancCliente">Cliente: -</div>
         <div style="font-size: 12px; color: var(--dark); margin-bottom: 3px;" id="lblCancServicos">Serviço: -</div>
         <div style="font-size: 13px; font-weight: 700; color: #166534; margin-top: 6px;" id="lblCancValor">Valor Total: R$ 0,00</div>
@@ -1058,7 +1058,7 @@
     <div class="cupom-header">ROSE ESTETICA</div>
     <div style="text-align: center; font-size: 11px;">Comanda de Atendimento</div>
     <div class="cupom-div"></div>
-    <div class="cupom-row"><span class="cupom-destaque">COMANDA: #<span id="p_num"></span></span><span id="p_data"></span></div>
+    <div class="cupom-row"><span class="cupom-destaque">COMANDA: <span id="p_num"></span></span><span id="p_data"></span></div>
     <div>CLIENTE: <strong id="p_cliente"></strong></div>
     <div class="cupom-div"></div>
     <div id="p_itens"></div>
@@ -1693,7 +1693,7 @@
           : '';
         card.innerHTML = `
           <div class="aberta-info">
-            <h4>Comanda #${c.numComanda} - ${c.cliente}</h4>
+            <h4>Comanda ${c.numComanda} - ${c.cliente}</h4>
             <p>${descServicos}</p>
           </div>
           <div class="aberta-total" style="display: flex; align-items: center;">
@@ -1754,7 +1754,7 @@
       const numAtual = parseInt(document.getElementById('numComanda').value, 10) || 4570;
       const proxSugerido = numAtual + 1;
       limparFormularioComanda(proxSugerido);
-      mostrarAlerta('Pronto para nova comanda #' + proxSugerido, true);
+      mostrarAlerta('Pronto para nova comanda ' + proxSugerido, true);
 
       if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run.withSuccessHandler(proxima => {
@@ -1824,10 +1824,10 @@
         return;
       }
 
-      const msg = 'Deseja remover este serviço da Comanda #' + numComanda + '?\n\n• Profissional: ' + profissional + '\n• Serviço: ' + descricao + '\n• Valor: ' + formatarMoedaPt(valor);
+      const msg = 'Deseja remover este serviço da Comanda ' + numComanda + '?\n\n• Profissional: ' + profissional + '\n• Serviço: ' + descricao + '\n• Valor: ' + formatarMoedaPt(valor);
       if (!confirm(msg)) return;
 
-      mostrarAlerta('Removendo serviço da comanda #' + numComanda + '...', true);
+      mostrarAlerta('Removendo serviço da comanda ' + numComanda + '...', true);
 
       google.script.run
         .withSuccessHandler(res => {
@@ -2078,10 +2078,10 @@
           }
 
           if (finalizar) {
-            mostrarAlerta('Comanda #' + numComanda + ' finalizada com sucesso!', true);
+            mostrarAlerta('Comanda ' + numComanda + ' finalizada com sucesso!', true);
             limparFormularioComanda(res.proximaComanda);
           } else {
-            mostrarAlerta('✅ Serviço de ' + profissional + ' adicionado à Comanda #' + numComanda + '!', true);
+            mostrarAlerta('✅ Serviço de ' + profissional + ' adicionado à Comanda ' + numComanda + '!', true);
             document.getElementById('valorItem').value = '';
             document.getElementById('descricaoServico').value = '';
 
@@ -3045,14 +3045,7 @@
             }
             ultimaComanda = n;
 
-            let numComandaHtml = `<strong>#${l.numComanda}</strong>`;
-            if (temMultiplos) {
-              if (ehMesmaComanda) {
-                numComandaHtml = `<span style="color: var(--primary); font-size: 11px; font-weight: 600;">↳ #${l.numComanda}</span>`;
-              } else {
-                numComandaHtml = `<strong>#${l.numComanda}</strong> <span style="font-size: 10px; background: #e9d5ff; color: #6b21a8; padding: 1px 4px; border-radius: 4px; font-weight: bold;" title="Comanda com múltiplos lançamentos">${contagemComandas[n]}x</span>`;
-              }
-            }
+            const numComandaHtml = `<strong>${l.numComanda}</strong>`;
 
             const semBadge = l.semana ? `<span class="badge" style="background: var(--purple-light); color: var(--primary); font-size: 11px; padding: 2px 6px; margin-right: 6px; font-weight: bold;">${l.semana}</span>` : '';
             tr.innerHTML = `
@@ -3313,14 +3306,7 @@
         }
         ultimaComanda = n;
 
-        let numComandaHtml = `<strong>#${l.numComanda}</strong>`;
-        if (temMultiplos) {
-          if (ehMesmaComanda) {
-            numComandaHtml = `<span style="color: var(--primary); font-size: 11px; font-weight: 600;">↳ #${l.numComanda}</span>`;
-          } else {
-            numComandaHtml = `<strong>#${l.numComanda}</strong> <span style="font-size: 10px; background: #e9d5ff; color: #6b21a8; padding: 1px 4px; border-radius: 4px; font-weight: bold;" title="Comanda com múltiplos lançamentos">${contagemComandas[n]}x</span>`;
-          }
-        }
+        const numComandaHtml = `<strong>${l.numComanda}</strong>`;
         
         // A coluna com checkbox de confirmacao e acao de cancelar so aparecem no Modo Gerencial!
         const colConf = appState.modoGerencial
@@ -3374,7 +3360,7 @@
 
       if (boxBusca) boxBusca.style.display = 'none';
       if (boxDetalhes) boxDetalhes.style.display = 'block';
-      if (lblNum) lblNum.innerText = 'Comanda #' + numComanda;
+      if (lblNum) lblNum.innerText = 'Comanda ' + numComanda;
       if (lblCli) lblCli.innerText = 'Cliente: ' + (cliente || 'Não informado');
       if (lblServ) lblServ.innerText = 'Serviço: ' + (servicos || 'Atendimento');
       if (lblVal) lblVal.innerText = 'Valor: R$ ' + formatarNumeroPt(valor);
@@ -3433,7 +3419,7 @@
       }
 
       if (msgStatus) {
-        msgStatus.innerText = 'Buscando comanda #' + num + '...';
+        msgStatus.innerText = 'Buscando comanda ' + num + '...';
         msgStatus.style.color = 'var(--primary)';
         msgStatus.style.display = 'block';
       }
@@ -3459,7 +3445,7 @@
           .withSuccessHandler(res => {
             if (!res || !res.itens || res.itens.length === 0) {
               if (msgStatus) {
-                msgStatus.innerText = 'Comanda #' + num + ' não encontrada na planilha!';
+                msgStatus.innerText = 'Comanda ' + num + ' não encontrada na planilha!';
                 msgStatus.style.color = 'var(--danger)';
                 msgStatus.style.display = 'block';
               }
@@ -3492,7 +3478,7 @@
       const btnConfirmar = document.getElementById('btnConfirmarExclusaoComanda');
 
       if (boxDetalhes) boxDetalhes.style.display = 'block';
-      if (lblNum) lblNum.innerText = 'Comanda #' + dados.numComanda;
+      if (lblNum) lblNum.innerText = 'Comanda ' + dados.numComanda;
       if (lblCli) lblCli.innerText = 'Cliente: ' + (dados.cliente || 'Não informado');
       if (lblServ) lblServ.innerText = 'Serviço: ' + (dados.servicos || 'Atendimento');
       if (lblVal) lblVal.innerText = 'Valor: R$ ' + formatarNumeroPt(dados.valor);
@@ -3539,7 +3525,7 @@
         .withSuccessHandler(res => {
           if (res && res.status === 'sucesso') {
             fecharModalCancelarComanda();
-            mostrarAlerta(res.mensagem || ('Comanda #' + num + ' cancelada com sucesso!'), true);
+            mostrarAlerta(res.mensagem || ('Comanda ' + num + ' cancelada com sucesso!'), true);
 
             // Atualiza cache de conferencia e tela de caixa
             if (cacheConferencia && cacheConferencia.linhas) {
