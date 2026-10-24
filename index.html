@@ -332,6 +332,10 @@
       .kpi-value { font-size: 16px; }
       .btn { padding: 10px 12px; font-size: 13px; }
     }
+    @keyframes pwaSlideUp {
+      from { opacity: 0; transform: translateY(22px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
   </style>
 </head>
 <body>
@@ -346,6 +350,7 @@
       </div>
     </div>
     <div style="display: flex; gap: 6px; align-items: center;">
+      <button type="button" id="btnHeaderInstalarApp" class="btn" style="display: none; background: rgba(255,255,255,0.22); color: #fff; padding: 4px 10px; font-size: 11px; font-weight: 600; border: 1px solid rgba(255,255,255,0.45); border-radius: 20px; align-items: center; gap: 4px; cursor: pointer;" onclick="abrirModalInstalarApp(true)">&#128242; Instalar</button>
       <span class="badge" id="lblSemanaTopo" style="padding: 4px 8px; font-size: 12px;">Ref: S42</span>
       <span class="badge" id="badgeModo" style="background: rgba(255,255,255,0.2); cursor: pointer; padding: 4px 8px; font-size: 12px;" onclick="clicarAlternarModo()">&#128273; Entrar</span>
       <button type="button" id="btnSairModo" class="btn" style="display: none; background: rgba(255,255,255,0.25); color: #fff; padding: 4px 10px; font-size: 11px; border: 1px solid rgba(255,255,255,0.4); border-radius: 20px;" onclick="fazerLogout()">&#128274; Sair</button>
@@ -388,6 +393,13 @@
       <button type="button" class="btn btn-primary btn-block" style="padding: 13px; font-size: 15px; font-weight: 700;" onclick="confirmarLoginInicial()">
         &#128275; Entrar no Sistema
       </button>
+
+      <div id="boxDicaInstalarLogin" style="display: none; margin-top: 14px; padding: 10px 12px; background: #fdf2f8; border-radius: 10px; border: 1px dashed #f472b6; font-size: 12px; color: #8e44ad; cursor: pointer; text-align: left;" onclick="abrirModalInstalarApp(true)">
+        <div style="font-weight: 700; display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+          <span>&#128242;</span> Instalar como Aplicativo
+        </div>
+        <span style="font-size: 11px; color: #64748b;">Toque aqui para adicionar à tela inicial do seu celular.</span>
+      </div>
 
       <div style="margin-top: 18px; font-size: 11px; color: var(--gray-text);">
         &#128737; Sistema protegido &bull; Rose Estética e Bem Estar
@@ -1163,6 +1175,99 @@
         <button type="button" class="btn btn-outline" style="flex: 1; padding: 10px; font-size: 13px;" onclick="fecharModalNovoAgendamento()">Cancelar</button>
         <button type="button" id="btnSalvarAgendamento" class="btn btn-primary" style="flex: 1.3; padding: 10px; font-size: 13px; background: var(--primary); font-weight: 700;" onclick="salvarNovoAgendamento()">Salvar na Agenda</button>
       </div>
+    </div>
+  </div>
+
+  <!-- MODAL INTELIGENTE DE INSTALAÇÃO DO APLICATIVO (PWA) -->
+  <div id="modalInstalarApp" style="display: none; position: fixed; z-index: 100000; inset: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); align-items: center; justify-content: center; padding: 16px; box-sizing: border-box;">
+    <div style="background: #ffffff; border-radius: 24px; max-width: 380px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.35), 0 0 0 1px rgba(142,68,173,0.15); overflow: hidden; font-family: 'Inter', sans-serif; animation: pwaSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);">
+      
+      <!-- Topo do Card com Degradê Sofisticado -->
+      <div style="background: linear-gradient(135deg, #6c3483 0%, #8e44ad 55%, #a855f7 100%); padding: 24px 20px 20px; text-align: center; color: #ffffff; position: relative;">
+        <!-- Botão Fechar no canto superior -->
+        <button type="button" onclick="fecharModalInstalarApp(true)" style="position: absolute; top: 12px; right: 12px; background: rgba(255,255,255,0.2); border: none; width: 28px; height: 28px; border-radius: 50%; color: #ffffff; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; line-height: 1;" title="Fechar">&times;</button>
+        
+        <!-- Ícone do Aplicativo -->
+        <div style="width: 72px; height: 72px; margin: 0 auto 12px; background: #ffffff; border-radius: 18px; padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: flex; align-items: center; justify-content: center;">
+          <img src="icons/icon-192.png" onerror="this.onerror=null; this.src='data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAQDAwMDAgQDAwMEBAQFBgoGBgUFBgwICQcKDgwPDg4MDQ0PERYTDxAVEQ0NExoTFRcYGRkZDxIbHRsYHRYYGRj/2wBDAQQEBAYFBgsGBgsYEA0QGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBj/wAARCADAAMADASIAAhEBAxEB/8QAHAABAAICAwEAAAAAAAAAAAAAAAYHBQgCAwQB/8QARhAAAQMDAQUEBQgGCQUBAAAAAQACAwQFEQYHEiExQRNRYXEiMoGRwRQVIzNCc6GyJDU3Q7HRFhdSU1VicqKjJTRUgpPx/8QAGwEBAAIDAQEAAAAAAAAAAAAAAAUGAwQHAQL/xAA2EQACAQMCAwYDBwMFAAAAAAAAAQIDBBEFMQYSIRNBUWFxkRQigQcyYqGx0fAVI1KCwcLh8f/aAAwDAQACEQMRAD8A3%2BREQBERAEREAREQBEXVLNHBC6WaRsbGjLnOOAB3koeN46s7UVZah2u0VHK%2BmsNOK6RvA1EhLYh5dXfgFB6radrOpeS25spweTYYGAD3glblKxqzWdvUgrriOzt5cuXJ%2BX7vCNhUWvdLtP1lTSAvuUdS3q2eFpz7QAVOtO7W7dXyspr5D83zOIAmad6EnxPNvt4eK9q2FWms4z6HtrxFZ3ElHLi349Pz2LKRdccjJGtfG8Pa4ZBByCO9di0idTyEREAREQBERAEREAREQBERAEREAREJwgPPVVUFFRyVVVK2KGNpc97jgNA5lUJrbXVZqerdS0rpILWx3oRZwZcfaf8AAdPNZnanq51dcHacoJf0Wndmpc0/WSD7Pk3%2BPkq1U1Y2aiu0muvcUHiHWZVJu1ov5Vu/Hy9AiIpQqYREQE30Nr6p07UsoLhI%2Ba1vOMHiafxb4d49yvemnjqadk8MjZI3tDmvachwPIgrVFWjsq1c6CqGma%2BX6J%2BTSOcfVdzLPI8x7VFX9omu0gvUt/DutSjJWtd9Hs/DyLjRcWnPfxXJQxewiIgCIiAIiIAiIgCIiAIiIAo1rfUP9HNI1FYxwFTJ9DTjveevsGT7FJVRW1i9m4awba4n5goG7pAPAyO4u9wwPetm0o9rVUXsROtXvwlrKa3fRerIC5znvc97i5zjkuPMnvXxEVlOVt53CIiAIiIAucUssE7JoXmORjg5j282kHIK4Im56nh5RstpG/M1HpamuQDRKW7kzR9mQcHD4%2BRWeVJbI74aPUM9lmf9FWM7SMHkJGj4tz7ldbTlVm6o9lUce46ro978ZaxqPfZ%2BpyREWuSgREQBERAEREAREQBERAeS4VUVBbaitlIEcEbpXHwAytXayqlrq%2BetnOZZ5HSvPiTlXttSuHyHZ7UxNdh9XI2nHkTl34AqglNaXTxFz8Sh8WXHNVhRXcs%2B4RSDT2kLpqEdtBuU9IDg1EoOCeoaOp/BTGHZZbhGO2u1Y53eyNrR%2BOVt1LulTeJPqQtro13cw7SEOni%2BhVyK1P6rrR/idf7mfyUS1lpml01U0cdJUzzidjnO7UAYwQOGPNKd5TqS5I7n1daLdW1N1qqXKvPJGEVb6p2k3GwasqrTT2yjnjh3MPke4OOWh3TzWG/rju3%2BDW//AOj/AOa2S72P2RcS31tTu6FKLhNKS%2BeK6NZXeXCiquh2xOMoFxsjez5F1NNkj2OHH3qxbPerbfbaK62VImiJ3SMYcx3c4dChAcRcC65w9FVNRt3GD6cyalHPqs4%2BpmrZXy2u9UlxhJD6eVsg8cHiPdlbR0s0dTSx1ERBjkYHtI6gjIWqK2G2bXD5w2eUBc7ekgDqd3/ocD8MKK1SGVGZ9cJXOKk6D7%2BpLkRFDF6CIiAIiIAiIgCIiAIiICo9tFZ6dqt7Xf3k7h7mj4qq6eE1NXFTtODI9rB7Tj4qcbXKnttoIgzwgpWNx4kl3xCg8EroKmOdnrRvD2%2BYOfgrHZx5aCwcu1uqqmoTctk0vYujUdwbpPRX/T42tdHu00AI4NJ%2B17gT5qnaq43CtnM1XXVEz3HJL5Cf/AVvX%2BlZrHQYktsgc%2BTdqIQTzcObD3HiR5qm6iCakqHU9VE%2BCVpw5kg3SD5FYNPUMPP3skhxLKr2kORvs8LGNiQaGkkO0C3AyPI3n8C4/2HLO7VP1ha/upPzBR/QpB2g24Agnef1/yOUg2qfrC1/dSfmC9msXcceBjt23o9XP8Akv8Aiaka8GdsFSD/AHsH5WK8nUlLvu/RYOZ/dt/kqO13%2B2Co%2B%2Bp/ysV7va7tHDddzPRSJ0v7UKs4aLoXJJr%2Bz3P8MCPX7R9kv1BJDLQwQVJaRHUwsDHsd0zjmO8FVbs3uFTatoTLa52GVRfTzMB4bzQS0%2Bwg%2B9W7ftQW/TlqfXV0rWuAPZQ59OV3QAfHoqm2b22ou20D52e36KlLp5HjkXuzut88knyCEhwHcXVThPVv6s27XkxDm258PpHPny7d/mXarg2LVu/brpb3O%2BrlZM0eDhg/i1U%2BrF2OVPZazq6bJxNSE48WuH81qX0eaizjHD9Xs76n55Rd6Iirh1EIiIAiIgCIiAIiIAiIeRQGu20mUy7T7n13TGweyNqiikWvHF20m8k/%2BRj3Nao6rTQWKUV5I5DqEua6qv8AE/1M1YNUXTTsrhSPbLTvOX08vFjj3juPiFcLZqeo06y53y3wU%2B7D20kcwEnZDnzI/D2Kt9Aab%2BdLobpVx5pKVw3QRwkk5geQ5n2LIbSNR9rN/R%2BkkJawh9U4Hm7mGezmfHCj7mnGtWVOC697LLplepZ2Mq9d5i/uxfj/AD8iQ2nUuka%2B8QUlspgyqkJ7MijEeOBJ9LpwBUc2qfrC1/dSfmCwGhf2gW7/AFP/ACOWf2qfrC1/dSfmC8jRVK6il4CpfTvNKqTmksSW3%2Bk1E2hte/arXMiPpudCG8ccdxuPxXsuOnNo1sts9dVVdZ2MLd%2BQx15eQOpwHLo13%2B2Co%2B%2Bp/wArFe0gDi5rmhzTkEEZBHUKWO48R8bV%2BGdH0RU6MKkZ0ouXPHLwlDonnpnJQej9P02rr7JBc7zNHKxgkDCN98zftAOceGOHfzV3Wm0W%2ByWxlBbKZsEDeOBxLj1JPMnxVL6qs9XofW8VbbHGOBz/AJRSScw3HOM%2BWceIIVxafvdLqGwQXSl4B43ZI85Mbx6zT5fwwhXPthrXmo2lrq1lWctPqpYisJQljZpfXGdmmjJqabK5NzaZStz68Mrf9ufgoWpXs1cW7T7XjqZB/wAblhuVmlL0Zw7TJct5Sf4l%2BpsSiIqudcCIiAIiIAiIgCIiAIeRREBrbrxu7tJvIPWoz/tasXabXU3m8QW6lHpyni7oxo5uPgAs7tJjMW065gjAcY3j2savHpvVD9N9u%2BnttPUTTYBllc4ENH2Rjp1VlhKXYJwXXBymrCl8fONd4jzPPuWVeK%2Bi0VotkNE1oe1vZUzDze88S4/mKpiSSSaZ8sr3PkeS5z3HJcTxJKymoNQVmork2rq2sjaxm5HFGSWsHXn1KxK8tKDpRzL7z3Mmsakruoo0%2BlOPRL/ckWhf2gW7/U/8jln9qn6wtf3Un5gobZrpJZb5Bc4oWSvhJIY8kA5BHTzXt1Lqao1LPTS1FLFTmBrmgRuJzkg9fJfM6U3cRqdyR9UbylHTalu38zaa/L9jW7Xn7X6g5/fU/wCVivZ/ru8yoVetnVLetVyXyS61EL3uY4xNiaQN0AcyeuFNScuJ71uF1484lsNW0zSraznzToUuWfRrDxHx32exhdU6fg1Lpua3SbrZvrIJT%2B7kHI%2BR5HwKqXROoZ9I6pkt9y3oqWWTsaqN37l4OA/2cj4HyV5qHam2eW3Ul5%2BczWS0czmBsvZsDhIRycc9ccPHghs8AcY2FtZXOga%2B27Sqm08NuEvFJdeu/TZrzZMQcjIIPiFLNmrS7aha8dDIf%2BNygdktstoscFulrpK3sBuMlkaGu3egOOeOWfJWJsrjL9plK4DIZDK4%2BHo4%2BKw3LxSl6HPbajThqUKdGfPFTWH1WUnvh9VnwNgERFVzqgREQBERAEREAREQBERAURtdpux2gNnxgT0rHZ7yCW/AKBK19tFH9LargG/3kDj7nD4qqFZLKWaMTlmu0uzvqi8Xn3CykemtRSwtljsVxfG4BzXNgcQQRkEHHJYp3qHyU01FJZhdIxUC9/KPkdP/ANtIwR/UtxgEZ81kq1HFpLvNS2oQqQlOb2x5b58mQ0gg4III55C5NhlfKyJkTy%2BTAY3dOXZ5YHXKlVDb6GosVPSRUdIa2WlkmdFVMkjmlI3iJIpeLd0AeqQM4KycnyKruIuE8NFTOobPSzxehIWZcGgFwaS4hoPAePFYndLLwtjZp6Y5JNy/m79kQOSCaGaWKSJ7XxEiQYzu44HPdxSaCamm7KoifFJgO3XjBwRkHHiCCpq51uo7ZeJqOiopflFoE0mIZGRbwmDcxhxB3Twd5juXTdaOhtVPV3CK2wVb2yUsDY6jeeyMOpxI5xAIJLjkDJwOOF4rrL2EtMws8386%2B%2BxDEU1o7ZRR1kYrLTSULauu7FlPWCSeXdG4DGwNxu43vWJzxHcVFLlBHS3qspYs9nFPJG3PHgHED%2BCzUqynJxNW4s5UYKcnueVWLscpe01lV1JHCGlIz4ucP5KulcOxajLLZdLg5v1krIWnHRoyfxcsV9LloyN7h%2Bl2l/T8uvsmWmiIq4dRCIiAIiIAiIgCIiAIiICEbU7d8u2e1MrW5fSyNnHkODvwJ9yoJbU3CljrrZU0UwzHPG6J3kRhauVdLLQ3CeinGJYJHRPHi04U1plTMXDwKHxZbctWFZd6x7HSstHqfUcUTYo75XtYwBrWiY4AAwAsYyGaRpdHDK8DmWMLgPcuCk2lIqsZ1KazFtZ%2Bh7mXm7MtzqBlyqW0zs5iD/ROeJHkeo6r00FZfKmeN9PcnxfIYS1s8swjZBGSBguPQnAxxWIWVst5daflUZEvZVLGtcYXND2lpyCN4EeGCOqx1IfK3BdTNQqt1F2s2o%2Br+n5nGrrb3RXiofU104qpI%2BzkkEgf2kbgCOPItIwR0XVBebtTVTqmnuNTHK5rWOe1/FwaMNB8scO5c7lNUXS4OrI4K6Rha1jXSjtHENGOJa0D2AcFjl7CKaw0snlWc4TfLJ4z0Z7YrxdoIZYoblVMZK8yPDZD6Tjzdnnk9SvNUVE9VVPqamV0ssh3nvcclx7yutPJfSilsjDKpOSw28BbD7Nrf83bOqAOaWvqAah%2Be9xyPwwqDtdBJdL1S22H16iVsQ8MnifdlbR0sTKeljgiAbHG0MYB0AGAozVJ4UYfUtvCVvmc677ui%2Bv/AIdyIihi9BERAEREAREQBERAEREB8wqL2sWQ2/V7bpEzEFc3eJHSRvB3vGD71eqjWt9PDUekaijjaDUs%2BmpyejxyHtGR7Vs2lbsqql3ETrVl8XayhHddV6opuz1DaXRkErjduF0Lt23P3XOxE04K989mtrbjV1dc2GofLcXRyMbHN9Gwhr8NbEDuv9M%2Btwy3keKhsVZX0W/DBV1VN6R32RyuZx5HIB5rjDWVdO9z6ernhc/1jFI5pd5kHipp28m3JPcoML%2BEYxhOGcEporbZhUWqimtzqgVk1TG%2BodI%2BOQNY8hpDeQPAZyPYsJcY6OSyW%2B40tG2kdM%2BWN8bHuc07pbgjeJOcOwfLoseKidpYWzSAx53CHn0c88d2VxL3mNsZe4saSWtzwBPPA6cgskaTjLmbz/H/ANGtUuYTg4qGPovL9n7kpkmEWk7I0y3lmYJj%2Bgv3WfXO9bxXCO30QsUNVBRROkhjinqDVCaOTi8Alp9RzDkYA44J7lgIbjcaeEQwXCrijGcMjmc1vHnwBwuDqqqfSNpX1U7oG8REZHFg8m5wvj4d7Z7zM72Dw2s9MfoS2vo4KjVt8qJrXTRwU0xYQWTvLi553XBjHZJOOeQ0LzXS2Wu0Mur20HbmGtighE73tDGuhLyCAQTg95zwUdFwrxIHiuqg4M7MOEzshv8AZznl4L4H1lZM2Bsk00kz2gMLi4vd6o8z0RUZJ9X0E7ynNNRh8zb7l35/dexYGyGxms1HPepWfRUbOzjJ6yOHwbn3q7AMdVgtIWFmndK0tuABlDd+Zw+1IeLj8PYs8oO6rdrUcu46Jo9l8Jaxpvfd+rCIi1yTCIiAIiIAiIgCIiAIiIAvhaCvqIClNqekX0NwdqOgi/Rqh36S1o%2BrkP2vJ38fNVstraqlp6ykkpamFssMrSx7HjIcDzBVB620JV6ZrHVdK189qefQl5mHP2X/AAPXzU1YXaaVOb69xQuIdGlTk7mivle68H4%2BhDkRFKFSCIiAK0tlOkDPVDU1wiIiZkUjHD1jyMnkOQ9pWE0NoGp1FUsuFxjfDamnPHg6o8G/5e8%2B5XvTwxU8DIIY2xxxtDWsaMBoHIBRV/dpLsoPr3lv4d0aUpK6rrotl4%2BZ2gAcl9RFDF7CIiAIiIAiIgCIiAIiIAiIgCIiALrlhimhdFLG2RjgQ5rhkEdxC7EQNZ6MrLUGyKhrZHVNiqBQSHiYJAXRHy6t/EKD1OzHWdNIWttjKgD7cMzCD7yCthUW7Sv6tNY39SBuuHLOvLmScX5ftsa90my/WVVIGvt0dM0ni%2BeZoA9gJKnmndkttt8jKm%2BSi4zDiIQN2Fp8Rzd7eHgrIReVb+rUWM49D214ds7d82HJ+fX8tjhHGyONrGMa1rRgBowAFzRFpk4lgIiIehERAEREAREQH//Z';" alt="Rose Estética" style="width: 60px; height: 60px; border-radius: 14px; object-fit: cover;">
+        </div>
+        
+        <h3 style="margin: 0 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -0.3px;">Rose Estética</h3>
+        <p style="margin: 0; font-size: 12px; opacity: 0.9; font-weight: 500;">Instale o aplicativo oficial no seu celular</p>
+      </div>
+
+      <!-- Corpo com Vantagens -->
+      <div style="padding: 18px 20px 20px;">
+        
+        <!-- Lista de Vantagens -->
+        <div style="background: #fdf4ff; border: 1px solid #f5d0fe; border-radius: 14px; padding: 12px 14px; margin-bottom: 18px;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="background: #8e44ad; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">&#9889;</div>
+            <span style="font-size: 12.5px; color: #374151; font-weight: 600;">Acesso direto com 1 toque na tela inicial</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+            <div style="background: #8e44ad; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">&#128241;</div>
+            <span style="font-size: 12.5px; color: #374151; font-weight: 600;">Tela cheia sem barras de navegador</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="background: #8e44ad; color: #fff; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; flex-shrink: 0;">&#128274;</div>
+            <span style="font-size: 12.5px; color: #374151; font-weight: 600;">Acesso rápido com seu PIN salvo</span>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO ESPECÍFICO ANDROID (Chrome / Samsung / Xiaomi / Motorola) -->
+        <div id="boxInstrucoesAndroid" style="display: none;">
+          <button type="button" id="btnInstalarAppAndroid" onclick="executarInstalacaoPwa()" style="width: 100%; padding: 14px 16px; background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%); color: #ffffff; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(142,68,173,0.35); display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 12px;">
+            <span style="font-size: 18px;">&#128242;</span> Instalar Aplicativo Agora
+          </button>
+          <div id="dicaMenuAndroid" style="display: none; font-size: 11px; color: #64748b; line-height: 1.4; text-align: center; margin-bottom: 12px; background: #f8fafc; padding: 8px 10px; border-radius: 8px; border: 1px dashed #cbd5e1;">
+            Se o botão acima não abrir, toque nos <strong>3 pontinhos (&#8942;)</strong> do navegador e selecione <strong>"Instalar aplicativo"</strong> ou <strong>"Adicionar à tela inicial"</strong>.
+          </div>
+        </div>
+
+        <!-- CONTEÚDO ESPECÍFICO IPHONE / IPAD (Safari iOS) -->
+        <div id="boxInstrucoesIos" style="display: none; margin-bottom: 16px;">
+          <div style="text-align: left; font-size: 12px; color: #334155; line-height: 1.5; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 14px;">
+            <div style="font-weight: 700; color: #6c3483; margin-bottom: 8px; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+              <span>&#127822;</span> No seu iPhone (Safari):
+            </div>
+            
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+              <span style="background: #e0e7ff; color: #4338ca; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; flex-shrink: 0;">1</span>
+              <div>
+                Toque no botão <strong>Compartilhar</strong> na barra inferior do Safari (ícone <span style="font-size: 15px; color: #0284c7;">&#9115;</span> ou quadradinho com seta <span style="display: inline-block; border: 1.5px solid #0284c7; border-radius: 3px; padding: 0 3px; font-size: 10px; color: #0284c7; font-weight: bold;">&#11014;</span>).
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px;">
+              <span style="background: #e0e7ff; color: #4338ca; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; flex-shrink: 0;">2</span>
+              <div>
+                Role a lista para baixo e toque em <strong>"Adicionar à Tela de Início"</strong> (ícone <strong>[ &#10133; ]</strong>).
+              </div>
+            </div>
+
+            <div style="display: flex; align-items: flex-start; gap: 10px;">
+              <span style="background: #e0e7ff; color: #4338ca; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 11px; flex-shrink: 0;">3</span>
+              <div>
+                Toque em <strong>"Adicionar"</strong> no canto superior direito da tela. Pronto!
+              </div>
+            </div>
+          </div>
+
+          <button type="button" onclick="fecharModalInstalarApp(true)" style="width: 100%; margin-top: 12px; padding: 13px 16px; background: linear-gradient(135deg, #8e44ad 0%, #6c3483 100%); color: #ffffff; border: none; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 14px rgba(142,68,173,0.3);">
+            Entendi, vou adicionar
+          </button>
+        </div>
+
+        <!-- Botão Lembrar Depois / Agora Não -->
+        <div style="text-align: center; margin-top: 4px;">
+          <button type="button" onclick="fecharModalInstalarApp(true)" style="background: none; border: none; color: #64748b; font-size: 12.5px; font-weight: 600; cursor: pointer; padding: 6px 12px; text-decoration: underline;">
+            Agora não, lembrar depois
+          </button>
+        </div>
+
+      </div>
+
     </div>
   </div>
 
@@ -4276,6 +4381,147 @@
       }
       mostrarAlerta('Erro na comunicação com a planilha: ' + msg, false);
     }
+
+    // === SISTEMA INTELIGENTE DE INSTALAÇÃO PWA (ANDROID & IPHONE) ===
+    let deferredInstallPrompt = null;
+
+    function isAppInstalled() {
+      // 1. iOS Safari standalone
+      if (('standalone' in window.navigator) && window.navigator.standalone) {
+        return true;
+      }
+      // 2. Android / Desktop display-mode
+      if (window.matchMedia && (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.matchMedia('(display-mode: fullscreen)').matches ||
+        window.matchMedia('(display-mode: minimal-ui)').matches
+      )) {
+        return true;
+      }
+      // 3. Android Webview / TWA
+      if (document.referrer && document.referrer.includes('android-app://')) {
+        return true;
+      }
+      return false;
+    }
+
+    function detectarDispositivo() {
+      const ua = (window.navigator.userAgent || '').toLowerCase();
+      const isIos = /iphone|ipad|ipod/.test(ua);
+      const isAndroid = /android/.test(ua);
+      return { isIos, isAndroid };
+    }
+
+    function abrirModalInstalarApp(manual = false) {
+      const modal = document.getElementById('modalInstalarApp');
+      if (!modal) return;
+
+      const dev = detectarDispositivo();
+      const boxAndroid = document.getElementById('boxInstrucoesAndroid');
+      const boxIos = document.getElementById('boxInstrucoesIos');
+      const dicaMenuAndroid = document.getElementById('dicaMenuAndroid');
+
+      if (dev.isIos) {
+        if (boxAndroid) boxAndroid.style.display = 'none';
+        if (boxIos) boxIos.style.display = 'block';
+      } else {
+        // Android / Desktop Chrome / Edge
+        if (boxAndroid) boxAndroid.style.display = 'block';
+        if (boxIos) boxIos.style.display = 'none';
+        if (dicaMenuAndroid) {
+          dicaMenuAndroid.style.display = deferredInstallPrompt ? 'none' : 'block';
+        }
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function fecharModalInstalarApp(dispensar = false) {
+      const modal = document.getElementById('modalInstalarApp');
+      if (modal) modal.style.display = 'none';
+      if (dispensar) {
+        localStorage.setItem('rose_pwa_install_dismissed', Date.now().toString());
+      }
+    }
+
+    async function executarInstalacaoPwa() {
+      if (deferredInstallPrompt) {
+        try {
+          deferredInstallPrompt.prompt();
+          const choice = await deferredInstallPrompt.userChoice;
+          console.log('[PWA] Escolha do usuario:', choice.outcome);
+          if (choice.outcome === 'accepted') {
+            fecharModalInstalarApp(false);
+          }
+          deferredInstallPrompt = null;
+        } catch (e) {
+          console.error('[PWA] Erro ao disparar prompt nativo:', e);
+        }
+      } else {
+        // Fallback caso o navegador nao forneca deferredInstallPrompt diretamente
+        const dicaMenu = document.getElementById('dicaMenuAndroid');
+        if (dicaMenu) dicaMenu.style.display = 'block';
+        alert('Para instalar o Rose Estética no seu celular:\n\n1. Toque nos 3 pontinhos (⋮) no topo ou rodapé do navegador.\n2. Escolha "Instalar aplicativo" ou "Adicionar à tela inicial".');
+      }
+    }
+
+    function verificarInstalacaoPwa() {
+      const instalado = isAppInstalled();
+      const btnHeader = document.getElementById('btnHeaderInstalarApp');
+      const boxLogin = document.getElementById('boxDicaInstalarLogin');
+
+      if (instalado) {
+        console.log('[PWA] Aplicativo rodando em modo standalone.');
+        if (btnHeader) btnHeader.style.display = 'none';
+        if (boxLogin) boxLogin.style.display = 'none';
+        return;
+      }
+
+      // Se nao estiver instalado, exibe botoes discretos
+      if (btnHeader) btnHeader.style.display = 'inline-flex';
+      if (boxLogin) boxLogin.style.display = 'block';
+
+      // Verifica se o usuario dispensou nos ultimos 3 dias
+      const dispensadoEm = localStorage.getItem('rose_pwa_install_dismissed');
+      if (dispensadoEm) {
+        const dias = (Date.now() - parseInt(dispensadoEm, 10)) / (1000 * 60 * 60 * 24);
+        if (dias < 3) {
+          console.log('[PWA] Prompt dispensado ha ' + dias.toFixed(1) + ' dias.');
+          return;
+        }
+      }
+
+      // Abre automaticamente com transicao suave apos 1.2 segundos
+      setTimeout(() => {
+        abrirModalInstalarApp(false);
+      }, 1200);
+    }
+
+    // Escuta evento nativo de instalacao do Android
+    window.addEventListener('beforeinstallprompt', (e) => {
+      console.log('[PWA] Evento beforeinstallprompt capturado.');
+      e.preventDefault();
+      deferredInstallPrompt = e;
+      const dicaMenu = document.getElementById('dicaMenuAndroid');
+      if (dicaMenu) dicaMenu.style.display = 'none';
+      verificarInstalacaoPwa();
+    });
+
+    // Detecta quando a instalacao for concluida
+    window.addEventListener('appinstalled', () => {
+      console.log('[PWA] Aplicativo instalado!');
+      fecharModalInstalarApp(false);
+      const btnHeader = document.getElementById('btnHeaderInstalarApp');
+      if (btnHeader) btnHeader.style.display = 'none';
+      const boxLogin = document.getElementById('boxDicaInstalarLogin');
+      if (boxLogin) boxLogin.style.display = 'none';
+      mostrarAlerta('&#127881; Aplicativo Rose Estética instalado com sucesso!', true);
+    });
+
+    // Verificacao imediata no carregamento da pagina (cobre iPhone / Safari e navegadores em geral)
+    window.addEventListener('load', () => {
+      verificarInstalacaoPwa();
+    });
   </script>
 </body>
 </html>
