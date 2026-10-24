@@ -413,43 +413,41 @@
       
       <!-- Agendamentos Google Calendar de Hoje -->
       <div id="boxAgenda" class="agenda-box" style="display: none;">
-        <div class="agenda-title">&#128197; Agendamentos de Hoje</div>
+        <div class="agenda-title" style="display: flex; justify-content: space-between; align-items: center;">
+          <span>&#128197; Agendamentos de Hoje</span>
+          <button type="button" class="btn btn-primary" style="font-size: 11px; padding: 4px 10px; background: var(--primary); color: #fff;" onclick="abrirModalNovoAgendamento()">&#10133; Agendar</button>
+        </div>
         <div id="listaAgenda" class="agenda-items"></div>
       </div>
 
+      <!-- Card Unificado de Lançamento de Comanda -->
       <div class="card" style="padding: 12px 14px; margin-bottom: 12px;">
-        <div class="card-title" style="margin-bottom: 8px;">
-          <span>Identificação da Comanda</span>
-          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 8px;" onclick="sincronizarAgendaGoogle()">&#128197; Google Agenda</button>
-            <button type="button" class="btn btn-primary" style="font-size: 11px; padding: 5px 10px; background: var(--primary); color: #fff;" onclick="abrirModalNovoAgendamento()">&#10133; Agendar</button>
-            <button type="button" class="btn btn-outline" style="font-size: 11px; padding: 5px 10px;" onclick="limparTudoParaNovaComanda()">&#10024; Nova Comanda</button>
+        
+        <!-- Barra de contexto quando comanda aberta for selecionada na aba Abertas -->
+        <div id="barraComandaAbertaContexto" style="display: none; justify-content: space-between; align-items: center; background: #fdf2f8; border: 1.5px solid #fbcfe8; padding: 8px 12px; border-radius: 8px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 16px;">&#128203;</span>
+            <span style="font-size: 13px; font-weight: 700; color: #9d174d;">
+              Comanda em Aberto: <span id="lblComandaAbertaCliente"></span>
+            </span>
           </div>
+          <button type="button" class="btn btn-outline" style="padding: 4px 10px; font-size: 12px; border-color: #f472b6; color: #be185d; background: #fff; font-weight: 600;" onclick="voltarParaAbertas()">
+            &#8592; Voltar
+          </button>
         </div>
 
-        <!-- Linha 1: Nº Comanda (controlado pelo sistema) e Data na mesma linha -->
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+        <input type="hidden" id="numComanda" value="">
+
+        <!-- Linha 1: Cliente e Data (Data visível exclusivamente para perfil Gerencial) -->
+        <div id="gridClienteData" style="display: grid; grid-template-columns: 1fr; gap: 8px; margin-bottom: 8px;">
           <div class="form-group" style="margin-bottom: 0;">
-            <label style="font-size: 11px; margin-bottom: 2px;">&#128274; Nº Comanda:</label>
-            <input type="number" id="numComanda" readonly placeholder="Carregando..." style="background: #f1f5f9; cursor: not-allowed; font-weight: 700; color: var(--primary); padding: 8px 10px; font-size: 14px;" title="Número controlado automaticamente pelo sistema. Para continuar uma comanda, clique na aba Abertas.">
+            <label style="font-size: 11px; margin-bottom: 2px;">&#128100; Nome da Cliente:</label>
+            <input type="text" id="cliente" placeholder="Nome da cliente" style="padding: 8px 10px; font-size: 14px;">
           </div>
-          <div class="form-group" style="margin-bottom: 0;">
-            <label id="lblDataAtendimento" style="font-size: 11px; margin-bottom: 2px;">&#128274; Data: <span style="font-size: 10px; color: #64748b;">(Hoje)</span></label>
-            <input type="date" id="dataAtendimento" readonly tabindex="-1" style="padding: 8px 10px; font-size: 14px; background: #f1f5f9; cursor: not-allowed; pointer-events: none;" title="Data fixa no dia atual. Alteração restrita à Gerência.">
+          <div class="form-group" id="boxDataGerencial" style="margin-bottom: 0; display: none;">
+            <label id="lblDataAtendimento" style="font-size: 11px; margin-bottom: 2px;">&#128197; Data: <span style="font-size: 10px; color: #16a34a; font-weight: 700;">(Gerencial)</span></label>
+            <input type="date" id="dataAtendimento" style="padding: 8px 10px; font-size: 14px; background: #fff;" title="Data da comanda (Editável pela Gerência)">
           </div>
-        </div>
-
-        <!-- Linha 2: Nome da Cliente -->
-        <div class="form-group" style="margin-bottom: 0;">
-          <label style="font-size: 11px; margin-bottom: 2px;">&#128100; Nome da Cliente:</label>
-          <input type="text" id="cliente" placeholder="Nome da cliente" style="padding: 8px 10px; font-size: 14px;">
-        </div>
-      </div>
-
-      <!-- Inclusao de Servico/Profissional Compacto -->
-      <div class="card" style="padding: 12px 14px; margin-bottom: 12px;">
-        <div class="card-title" style="margin-bottom: 8px; font-size: 13px;">
-          <span>Adicionar Procedimento</span>
         </div>
         
         <!-- Linha 1: Profissional e Valor R$ na mesma linha -->
@@ -1605,8 +1603,6 @@
         }
         if (data.proximaComanda) {
           appState.proximaComanda = data.proximaComanda;
-          const inpNum = document.getElementById('numComanda');
-          if (inpNum) inpNum.value = appState.proximaComanda;
         }
         if (data.comandasAbertas) {
           appState.comandasAbertas = data.comandasAbertas;
@@ -2222,11 +2218,11 @@
           : '';
         card.innerHTML = `
           <div class="aberta-info">
-            <h4>Comanda ${c.numComanda} - ${c.cliente}</h4>
-            <p>${descServicos}</p>
+            <h4 style="font-size: 15px; color: var(--primary); font-weight: 700; margin-bottom: 2px;">&#128100; ${c.cliente || 'Cliente sem nome'}</h4>
+            <p style="font-size: 12px; color: var(--gray-text);">${descServicos}</p>
           </div>
           <div class="aberta-total" style="display: flex; align-items: center;">
-            <span>${formatarMoedaPt(c.total)}</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--dark);">${formatarMoedaPt(c.total)}</span>
             ${btnCanc}
           </div>
         `;
@@ -2236,7 +2232,21 @@
     }
 
     function carregarComandaNaTela(c) {
-      document.getElementById('numComanda').value = c.numComanda;
+      document.getElementById('numComanda').value = c.numComanda || '';
+      
+      const elCliente = document.getElementById('cliente');
+      if (elCliente) {
+        elCliente.value = c.cliente || '';
+        elCliente.readOnly = true;
+        elCliente.style.background = '#f1f5f9';
+        elCliente.style.cursor = 'not-allowed';
+      }
+
+      const barraContexto = document.getElementById('barraComandaAbertaContexto');
+      const lblCliente = document.getElementById('lblComandaAbertaCliente');
+      if (barraContexto) barraContexto.style.display = 'flex';
+      if (lblCliente) lblCliente.innerText = c.cliente || 'Cliente';
+
       // Ao carregar comanda aberta, assegura data de hoje para profissionais comuns
       const elData = document.getElementById('dataAtendimento');
       if (elData) {
@@ -2244,7 +2254,6 @@
           elData.value = getHojeIso();
         }
       }
-      document.getElementById('cliente').value = c.cliente;
 
       appState.comandaAtualItens = (c.itens || []).map(it => ({
         id: it.id,
@@ -2255,6 +2264,11 @@
 
       atualizarTabelaItensTela();
       mudarAba('comanda');
+    }
+
+    function voltarParaAbertas() {
+      limparFormularioComanda();
+      mudarAba('abertas');
     }
 
     function verificarMudancaNumComanda() {
@@ -2496,8 +2510,8 @@
       const descricao = document.getElementById('descricaoServico').value.trim() || 'Atendimento';
       const valorNum = parseValorPt(document.getElementById('valorItem').value);
 
-      if (!numComanda || !cliente) {
-        mostrarAlerta('Informe o número da comanda e o nome da cliente!', false);
+      if (!cliente) {
+        mostrarAlerta('Informe o nome da cliente!', false);
         return;
       }
 
@@ -2621,10 +2635,25 @@
           }
 
           if (finalizar) {
-            mostrarAlerta('Comanda ' + numComanda + ' finalizada com sucesso!', true);
-            limparFormularioComanda(res.proximaComanda);
+            mostrarAlerta('Comanda ' + (res.cupom ? res.cupom.numComanda : '') + ' finalizada com sucesso!', true);
+            limparFormularioComanda();
           } else {
-            mostrarAlerta('✅ Serviço de ' + profissional + ' adicionado à Comanda ' + numComanda + '!', true);
+            if (res.numComanda) {
+              document.getElementById('numComanda').value = res.numComanda;
+            }
+            // Bloqueia o campo cliente enquanto a comanda estiver em edicao aberta
+            const elCliente = document.getElementById('cliente');
+            if (elCliente) {
+              elCliente.readOnly = true;
+              elCliente.style.background = '#f1f5f9';
+              elCliente.style.cursor = 'not-allowed';
+            }
+            const barraContexto = document.getElementById('barraComandaAbertaContexto');
+            const lblCliente = document.getElementById('lblComandaAbertaCliente');
+            if (barraContexto) barraContexto.style.display = 'flex';
+            if (lblCliente) lblCliente.innerText = cliente;
+
+            mostrarAlerta('✅ Serviço de ' + profissional + ' adicionado à comanda!', true);
             document.getElementById('valorItem').value = '';
             document.getElementById('descricaoServico').value = '';
 
@@ -2665,15 +2694,28 @@
         .salvarItemComanda(payload);
     }
 
-    function limparFormularioComanda(proxima) {
-      document.getElementById('numComanda').value = proxima || '';
+    function limparFormularioComanda() {
+      const inpNum = document.getElementById('numComanda');
+      if (inpNum) inpNum.value = '';
+
+      const elCliente = document.getElementById('cliente');
+      if (elCliente) {
+        elCliente.value = '';
+        elCliente.readOnly = false;
+        elCliente.style.background = '#ffffff';
+        elCliente.style.cursor = 'text';
+      }
+
+      const barraContexto = document.getElementById('barraComandaAbertaContexto');
+      if (barraContexto) barraContexto.style.display = 'none';
+
       const elData = document.getElementById('dataAtendimento');
       if (elData) {
         if (!appState.modoGerencial || !elData.value) {
           elData.value = getHojeIso();
         }
       }
-      document.getElementById('cliente').value = '';
+
       document.getElementById('valorItem').value = '';
       document.getElementById('descricaoServico').value = '';
       document.getElementById('pgValorDinheiro').value = '';
@@ -3237,30 +3279,26 @@
       const cardFaturado = document.getElementById('cardKpiTotalFaturado');
       const painelQuitacao = document.getElementById('painelQuitacaoComissoes');
 
-      // Controle de permissão de edição do campo de Data da Comanda
+      // Controle do campo de Data (exclusivo Gerencial)
+      const gridClienteData = document.getElementById('gridClienteData');
+      const boxDataGer = document.getElementById('boxDataGerencial');
       const elData = document.getElementById('dataAtendimento');
-      const lblData = document.getElementById('lblDataAtendimento');
-      if (elData) {
+      if (boxDataGer && gridClienteData) {
         if (appState.modoGerencial) {
-          elData.readOnly = false;
-          elData.style.pointerEvents = 'auto';
-          elData.style.background = '#ffffff';
-          elData.style.cursor = 'default';
-          elData.removeAttribute('tabindex');
-          elData.title = 'Data da comanda (Editável exclusivamente pela Gerência)';
-          if (lblData) {
-            lblData.innerHTML = '&#128197; Data: <span style="font-size: 10px; color: #16a34a; font-weight: 700;">(Gerencial)</span>';
+          boxDataGer.style.display = 'block';
+          gridClienteData.style.gridTemplateColumns = '1fr 1fr';
+          if (elData) {
+            elData.readOnly = false;
+            elData.style.pointerEvents = 'auto';
+            elData.style.background = '#ffffff';
+            elData.style.cursor = 'default';
           }
         } else {
-          elData.value = getHojeIso();
-          elData.readOnly = true;
-          elData.style.pointerEvents = 'none';
-          elData.style.background = '#f1f5f9';
-          elData.style.cursor = 'not-allowed';
-          elData.setAttribute('tabindex', '-1');
-          elData.title = 'Data fixa no dia atual. Alteração restrita à Gerência.';
-          if (lblData) {
-            lblData.innerHTML = '&#128274; Data: <span style="font-size: 10px; color: #64748b;">(Hoje)</span>';
+          boxDataGer.style.display = 'none';
+          gridClienteData.style.gridTemplateColumns = '1fr';
+          if (elData) {
+            elData.value = getHojeIso();
+            elData.readOnly = true;
           }
         }
       }
