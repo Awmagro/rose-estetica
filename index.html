@@ -803,6 +803,7 @@
             <input type="date" id="confFiltroData" style="padding: 6px 10px; border: 1px solid var(--gray-border); border-radius: 6px; font-size: 13px; background: #fff;" onchange="definirFiltroDataConf('personalizada')">
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('hoje')">Hoje</button>
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('ontem')">Ontem</button>
+            <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px;" onclick="definirFiltroDataConf('todos')">Todos</button>
             <button type="button" class="btn btn-outline" style="padding: 5px 10px; font-size: 12px; color: #dc2626; border-color: #fca5a5;" onclick="abrirModalCancelarAvulso()">&#128465; Cancelar Comanda</button>
           </div>
           <div id="lblStatusFiltroConf" style="font-size: 12px; font-weight: bold; color: var(--primary);">
@@ -821,8 +822,8 @@
           <span class="badge" style="background: #dcfce7; color: #15803d; font-size: 11px;">Movimentação de Hoje</span>
         </div>
 
-        <!-- Subtotais por Tipo de Pagamento -->
-        <div class="resumo-kpis" id="boxKpisPagamento">
+        <!-- Subtotais por Tipo de Pagamento (Visivel Exclusivamente no Modo Gerencial) -->
+        <div class="resumo-kpis" id="boxKpisPagamento" style="display: none;">
           <div class="kpi-card">
             <div class="kpi-title">&#128181; DINHEIRO</div>
             <div class="kpi-value verde" id="kpiPgDinheiro">R$ 0,00</div>
@@ -1221,7 +1222,7 @@
         else if (metodo === 'montarResumoComanda') { payload.numComanda = args[0]; }
         else if (metodo === 'listarComandasAbertas') { }
         else if (metodo === 'getExtratoSemanal') { payload.semana = args[0]; payload.profissionalFiltro = args[1]; payload.modoGerencial = args[2]; }
-        else if (metodo === 'alternarConferenciaCartao') { payload.idRegistro = args[0]; payload.conferido = args[1]; }
+        else if (metodo === 'alternarConferenciaCartao') { payload.idRegistro = args[0]; payload.conferido = args[1]; payload.numComanda = args[2]; }
         else if (metodo === 'confirmarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarComanda') { payload.numComanda = args[0]; payload.pin = args[1]; payload.motivo = args[2]; }
@@ -3083,8 +3084,11 @@
     function popularSelectExtratoSemana(modoGerencial) {
       const sel = document.getElementById('extratoSemana');
       if (!sel) return;
-      const semAtual = appState.semanaAtual || 'S42';
-      const valAtual = sel.value || semAtual;
+      const semAtual = appState.semanaAtual || 'S43';
+      let valAtual = sel.value;
+      if (!valAtual || valAtual === 'PENDENTES' || !/^S\d+$/.test(valAtual)) {
+        valAtual = semAtual;
+      }
 
       if (modoGerencial) {
         sel.innerHTML = '';
@@ -3095,6 +3099,7 @@
           if (opt.value === valAtual) opt.selected = true;
           sel.add(opt);
         }
+        sel.value = valAtual;
         sel.disabled = false;
         sel.style.background = '#fff';
       } else {
@@ -3673,17 +3678,21 @@
       const thConf = document.getElementById('thConfCaixa');
       const lblDataHoje = document.getElementById('lblDataCaixaHoje');
       const filtroInput = document.getElementById('confFiltroData');
+      const boxKpis = document.getElementById('boxKpisPagamento');
       const hojeIso = getHojeIso();
 
       if (appState.modoGerencial) {
         if (barraFiltro) barraFiltro.style.display = 'flex';
         if (barraHoje) barraHoje.style.display = 'none';
         if (thConf) thConf.style.display = 'table-cell';
+        if (boxKpis) boxKpis.style.display = 'grid';
+        if (filtroInput && !filtroInput.value) filtroInput.value = hojeIso;
       } else {
         if (barraFiltro) barraFiltro.style.display = 'none';
         if (barraHoje) barraHoje.style.display = 'flex';
         if (lblDataHoje) lblDataHoje.innerText = formatarDataPt(hojeIso);
         if (thConf) thConf.style.display = 'none';
+        if (boxKpis) boxKpis.style.display = 'none';
         if (filtroInput) filtroInput.value = hojeIso;
       }
     }
@@ -3695,6 +3704,8 @@
         filtroInput.value = getHojeIso();
       } else if (modo === 'ontem') {
         filtroInput.value = getOntemIso();
+      } else if (modo === 'todos') {
+        filtroInput.value = '';
       }
       if (!cacheConferencia || !cacheConferencia.linhas) {
         carregarConferencia();
@@ -3736,6 +3747,10 @@
     }
 
     function carregarConferencia(forcarRecarregar) {
+      const filtroInput = document.getElementById('confFiltroData');
+      if (filtroInput && !filtroInput.value) {
+        filtroInput.value = getHojeIso();
+      }
       atualizarVisibilidadeBarraCaixa();
 
       if (!forcarRecarregar && cacheConferencia && cacheConferencia.linhas && cacheConferencia.linhas.length > 0) {
@@ -3757,10 +3772,8 @@
         .withSuccessHandler(res => {
           cacheConferencia = res;
           const filtroInput = document.getElementById('confFiltroData');
-          if (filtroInput) {
-            if (!appState.modoGerencial || !filtroInput.value) {
-              filtroInput.value = getHojeIso();
-            }
+          if (filtroInput && !filtroInput.value) {
+            filtroInput.value = getHojeIso();
           }
           aplicarFiltroDataConferencia();
         })
@@ -3776,8 +3789,15 @@
       const hojeIso = getHojeIso();
       const ontemIso = getOntemIso();
 
-      // No Modo Balcao / Profissional, o filtro eh ESTRITAMENTE a data de hoje
-      const dataFiltro = appState.modoGerencial ? (filtroInput ? filtroInput.value : hojeIso) : hojeIso;
+      // No Modo Balcao / Profissional, o filtro eh ESTRITAMENTE a data de hoje.
+      // No Modo Gerencial, se filtroInput tiver valor, usa esse valor (ou se vazio por 'todos', usa '').
+      let dataFiltro = hojeIso;
+      if (appState.modoGerencial) {
+        dataFiltro = filtroInput ? filtroInput.value : hojeIso;
+      } else {
+        dataFiltro = hojeIso;
+        if (filtroInput) filtroInput.value = hojeIso;
+      }
       const dataPtFiltro = formatarDataPt(dataFiltro);
       const statusEl = document.getElementById('lblStatusFiltroConf');
 
@@ -3886,7 +3906,7 @@
         
         // A coluna com checkbox de confirmacao e acao de cancelar so aparecem no Modo Gerencial!
         const colConf = appState.modoGerencial
-          ? `<td style="text-align: center;"><input type="checkbox" ${l.conferido ? 'checked' : ''} onchange="alternarConf(${l.id}, this.checked)"></td>`
+          ? `<td style="text-align: center;"><input type="checkbox" class="chk-conf-comanda" data-comanda="${l.numComanda}" ${l.conferido ? 'checked' : ''} onchange="alternarConf('${l.id}', this.checked, '${l.numComanda}')"></td>`
           : '';
 
         const colAcao = appState.modoGerencial
@@ -3908,9 +3928,29 @@
       });
     }
 
-    function alternarConf(idRegistro, checked) {
+    function alternarConf(idRegistro, checked, numComanda) {
+      const numComStr = String(numComanda || '').trim();
+
+      // 1. Atualiza no cache local todas as linhas dessa comanda (ou pelo id)
+      if (cacheConferencia && cacheConferencia.linhas) {
+        cacheConferencia.linhas.forEach(item => {
+          if ((numComStr && String(item.numComanda) === numComStr) || String(item.id) === String(idRegistro)) {
+            item.conferido = checked;
+          }
+        });
+      }
+
+      // 2. Sincroniza visualmente todos os checkboxes da mesma comanda na tela
+      if (numComStr) {
+        const checkboxes = document.querySelectorAll(`input.chk-conf-comanda[data-comanda="${numComStr}"]`);
+        checkboxes.forEach(cb => {
+          cb.checked = checked;
+        });
+      }
+
+      // 3. Persiste na planilha via Google Apps Script (ou shim fetch PWA)
       if (typeof google !== 'undefined' && google.script && google.script.run) {
-        google.script.run.alternarConferenciaCartao(idRegistro, checked);
+        google.script.run.alternarConferenciaCartao(idRegistro, checked, numComStr);
       }
     }
 
@@ -4172,7 +4212,13 @@
       });
 
       if (aba === 'extrato') aplicarModoExtrato();
-      if (aba === 'conferencia') carregarConferencia();
+      if (aba === 'conferencia') {
+        const filtroInput = document.getElementById('confFiltroData');
+        if (filtroInput && !filtroInput.value) {
+          filtroInput.value = getHojeIso();
+        }
+        carregarConferencia();
+      }
     }
 
     function mostrarAlerta(msg, sucesso) {
