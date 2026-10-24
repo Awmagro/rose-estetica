@@ -1324,7 +1324,7 @@
         else if (metodo === 'fecharComandaCompleta') { payload.numComanda = args[0]; payload.formaPg = args[1]; payload.trocoVal = args[2]; payload.data = args[3]; }
         else if (metodo === 'montarResumoComanda') { payload.numComanda = args[0]; }
         else if (metodo === 'listarComandasAbertas') { }
-        else if (metodo === 'getExtratoSemanal') { payload.semana = args[0]; payload.profissionalFiltro = args[1]; payload.modoGerencial = args[2]; }
+        else if (metodo === 'getExtratoSemanal') { payload.semana = args[0]; payload.profissionalFiltro = args[1]; payload.modoGerencial = args[2]; payload.dataFiltro = args[3]; }
         else if (metodo === 'alternarConferenciaCartao') { payload.idRegistro = args[0]; payload.conferido = args[1]; payload.numComanda = args[2]; }
         else if (metodo === 'confirmarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarPagamentoComissao') { payload.dados = args[0]; }
@@ -2741,6 +2741,7 @@
 
           if (finalizar) {
             mostrarAlerta('Comanda ' + (res.cupom ? res.cupom.numComanda : '') + ' finalizada com sucesso!', true);
+            cacheConferencia = null;
             limparFormularioComanda();
           } else {
             if (res.numComanda) {
@@ -3843,18 +3844,18 @@
     function definirFiltroDataConf(modo) {
       const filtroInput = document.getElementById('confFiltroData');
       if (!filtroInput) return;
+      let novaData = getHojeIso();
       if (modo === 'hoje') {
-        filtroInput.value = getHojeIso();
+        novaData = getHojeIso();
       } else if (modo === 'ontem') {
-        filtroInput.value = getOntemIso();
+        novaData = getOntemIso();
       } else if (modo === 'todos') {
-        filtroInput.value = '';
+        novaData = '';
+      } else if (modo === 'personalizada') {
+        novaData = filtroInput.value;
       }
-      if (!cacheConferencia || !cacheConferencia.linhas) {
-        carregarConferencia();
-      } else {
-        aplicarFiltroDataConferencia();
-      }
+      filtroInput.value = novaData;
+      carregarConferencia(true, novaData);
     }
 
     function parsePagamentoStr(forma, valorTotal) {
@@ -3889,14 +3890,26 @@
       return res;
     }
 
-    function carregarConferencia(forcarRecarregar) {
+    function carregarConferencia(forcarRecarregar, dataAlvo) {
       const filtroInput = document.getElementById('confFiltroData');
+      const hojeIso = getHojeIso();
       if (filtroInput && !filtroInput.value) {
-        filtroInput.value = getHojeIso();
+        filtroInput.value = hojeIso;
       }
       atualizarVisibilidadeBarraCaixa();
 
-      if (!forcarRecarregar && cacheConferencia && cacheConferencia.linhas && cacheConferencia.linhas.length > 0) {
+      let dataConsulta = hojeIso;
+      if (appState.modoGerencial) {
+        if (typeof dataAlvo !== 'undefined') {
+          dataConsulta = dataAlvo;
+        } else if (filtroInput) {
+          dataConsulta = filtroInput.value;
+        }
+      } else {
+        dataConsulta = hojeIso;
+      }
+
+      if (!forcarRecarregar && cacheConferencia && cacheConferencia.dataConsultada === dataConsulta && cacheConferencia.linhas && cacheConferencia.linhas.length > 0) {
         aplicarFiltroDataConferencia();
         return;
       }
@@ -3914,14 +3927,17 @@
       google.script.run
         .withSuccessHandler(res => {
           cacheConferencia = res;
+          if (cacheConferencia) {
+            cacheConferencia.dataConsultada = dataConsulta;
+          }
           const filtroInput = document.getElementById('confFiltroData');
-          if (filtroInput && !filtroInput.value) {
+          if (filtroInput && !filtroInput.value && !appState.modoGerencial) {
             filtroInput.value = getHojeIso();
           }
           aplicarFiltroDataConferencia();
         })
         .withFailureHandler(tratarErro)
-        .getExtratoSemanal('CONFERENCIA', 'TODAS', true);
+        .getExtratoSemanal('CONFERENCIA', 'TODAS', true, dataConsulta);
     }
 
     function aplicarFiltroDataConferencia() {

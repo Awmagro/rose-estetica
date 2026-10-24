@@ -1,4 +1,4 @@
-﻿const CACHE_NAME = 'rose-estetica-pwa-v30';
+﻿const CACHE_NAME = 'rose-estetica-pwa-v31';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
