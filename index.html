@@ -390,7 +390,7 @@
         </span>
       </label>
 
-      <button type="button" class="btn btn-primary btn-block" style="padding: 13px; font-size: 15px; font-weight: 700;" onclick="confirmarLoginInicial()">
+      <button type="button" id="btnEntrarLoginInicial" class="btn btn-primary btn-block" style="padding: 13px; font-size: 15px; font-weight: 700;" onclick="confirmarLoginInicial()">
         &#128275; Entrar no Sistema
       </button>
 
@@ -1297,14 +1297,12 @@
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').then(reg => {
           console.log('[PWA] Service Worker registrado com sucesso:', reg.scope);
-          // Forca verificacao imediata de nova versao no servidor
           if (typeof reg.update === 'function') reg.update();
         }).catch(err => {
           console.log('[PWA] Falha ao registrar Service Worker:', err);
         });
       });
 
-      // Auto-reload quando o Service Worker atualizar e assumir o controle da pagina
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         console.log('[PWA] Nova versao detectada, recarregando pagina...');
         window.location.reload();
@@ -1330,6 +1328,8 @@
         else if (metodo === 'cancelarPagamentoComissao') { payload.dados = args[0]; }
         else if (metodo === 'cancelarComanda') { payload.numComanda = args[0]; payload.pin = args[1]; payload.motivo = args[2]; }
         else if (metodo === 'alterarPinAcesso') { payload.dados = args[0]; }
+        else if (metodo === 'autenticarUsuario') { payload.nome = args[0]; payload.pin = args[1]; }
+        else if (metodo === 'exportarBackupDados') { payload.pin = args[0]; }
 
         fetch(API_URL, {
           method: 'POST',
@@ -1395,6 +1395,28 @@
 
     function formatarMoedaPt(val) {
       return 'R$ ' + formatarNumeroPt(val);
+    }
+
+    function validarComplexidadePin(pin) {
+      const p = String(pin || '').trim();
+      if (!p || p.length < 4 || p.length > 6 || !/^\d+$/.test(p)) {
+        return 'O PIN deve conter entre 4 e 6 números.';
+      }
+      if (/^(\d)\1+$/.test(p)) {
+        return 'PIN muito fraco (números todos repetidos como ' + p + '). Escolha números mais seguros.';
+      }
+      const fracas = [
+        '1234', '2345', '3456', '4567', '5678', '6789',
+        '4321', '5432', '6543', '7654', '8765', '9876',
+        '0123', '3210', '12345', '54321', '123456', '654321'
+      ];
+      if (fracas.indexOf(p) !== -1) {
+        return 'PIN muito óbvio ou sequencial (ex: ' + p + '). Escolha uma combinação mais segura.';
+      }
+      if (p === '8665') {
+        return 'Este PIN é reservado pelo sistema. Escolha outro.';
+      }
+      return null;
     }
 
     const CHAVE_STORAGE_AUTH = 'rose_estetica_auth_v1';
@@ -1530,6 +1552,7 @@
       const inp = document.getElementById('inputPinLoginInicial');
       const erro = document.getElementById('erroLoginInicial');
       const chkLembrar = document.getElementById('chkLembrarAcesso');
+      const btn = document.getElementById('btnEntrarLoginInicial');
       
       const nomeEscolhido = sel ? sel.value : 'AUTO';
       const pin = inp ? inp.value.trim() : '';
@@ -1543,60 +1566,62 @@
         return;
       }
 
-      const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
-      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '';
+      if (btn) {
+        btn.disabled = true;
+        btn.innerText = 'Verificando...';
+      }
+      if (erro) erro.style.display = 'none';
 
-      // 1. PIN Gerencial Master (8665) ou Rose (PIN dinâmico)
-      if (pin === '8665' || (pinRose && pin === pinRose) || (nomeEscolhido.toLowerCase() === 'rose' && pinRose && pin === pinRose)) {
-        if (erro) erro.style.display = 'none';
-        appState.autenticado = true;
-        appState.modoGerencial = true;
-        appState.profissionalLogada = null;
-        appState.pinAutenticado = pin;
-        const lembrar = chkLembrar ? chkLembrar.checked : false;
-        salvarSessao('gerencial', 'Rose', lembrar);
-        exibirAppAutenticado(true);
-        atualizarVisualModo();
-        mostrarAlerta('&#9989; Acesso Gerencial ativado com sucesso!', true);
+      const resetBtn = () => {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerText = '&#128275; Entrar no Sistema';
+        }
+      };
+
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        resetBtn();
+        if (erro) {
+          erro.innerText = 'Servidor indisponível no momento. Tente novamente.';
+          erro.style.display = 'block';
+        }
         return;
       }
 
-      // 2. PIN Individual de Profissional (estritamente dinâmico)
-      let profEncontrada = null;
-      if (nomeEscolhido && nomeEscolhido !== 'AUTO') {
-        profEncontrada = (appState.profissionais || []).find(p => {
-          const pinValido = String(p.pin || '').trim();
-          return pinValido && p.nome.toLowerCase() === nomeEscolhido.toLowerCase() && (pinValido === pin);
-        });
-      } else {
-        profEncontrada = (appState.profissionais || []).find(p => {
-          const pinValido = String(p.pin || '').trim();
-          return pinValido && (pinValido === pin);
-        });
-      }
-
-      if (profEncontrada) {
-        if (erro) erro.style.display = 'none';
-        appState.autenticado = true;
-        appState.modoGerencial = false;
-        appState.profissionalLogada = profEncontrada.nome;
-        const lembrar = chkLembrar ? chkLembrar.checked : false;
-        salvarSessao('profissional', profEncontrada.nome, lembrar);
-        exibirAppAutenticado(true);
-        atualizarVisualModo();
-        mostrarAlerta('&#128100; Olá, ' + profEncontrada.nome + '! Acesso liberado.', true);
-        return;
-      }
-
-      // 3. PIN incorreto
-      if (erro) {
-        erro.innerText = 'PIN não reconhecido! Tente novamente.';
-        erro.style.display = 'block';
-      }
-      if (inp) {
-        inp.value = '';
-        inp.focus();
-      }
+      google.script.run
+        .withSuccessHandler(function(res) {
+          resetBtn();
+          if (res && res.status === 'sucesso' && res.autenticado) {
+            if (erro) erro.style.display = 'none';
+            appState.autenticado = true;
+            appState.modoGerencial = !!res.modoGerencial;
+            appState.profissionalLogada = res.modoGerencial ? null : res.profissional;
+            appState.pinAutenticado = pin;
+            const lembrar = chkLembrar ? chkLembrar.checked : false;
+            salvarSessao(res.modoGerencial ? 'gerencial' : 'profissional', res.profissional || 'Rose', lembrar);
+            exibirAppAutenticado(true);
+            atualizarVisualModo();
+            mostrarAlerta(res.mensagem || '&#9989; Acesso liberado com sucesso!', true);
+          } else {
+            if (erro) {
+              erro.innerText = (res && res.mensagem) ? res.mensagem : 'PIN não reconhecido! Tente novamente.';
+              erro.style.display = 'block';
+            }
+            if (inp) {
+              inp.value = '';
+              inp.focus();
+            }
+          }
+        })
+        .withFailureHandler(function(err) {
+          resetBtn();
+          if (erro) {
+            erro.innerText = err && err.message ? err.message : 'Falha na verificação de acesso. Tente novamente.';
+            erro.style.display = 'block';
+          }
+          if (inp) inp.focus();
+        })
+        .autenticarUsuario(nomeEscolhido, pin);
     }
 
     function fazerLogout() {
@@ -3062,19 +3087,10 @@
         return;
       }
 
-      if (!novaSenha || novaSenha.length < 4 || !/^\d+$/.test(novaSenha)) {
+      const erroComplex = validarComplexidadePin(novaSenha);
+      if (erroComplex) {
         if (msg) {
-          msg.innerText = 'A nova senha deve conter no mínimo 4 números.';
-          msg.style.color = 'var(--danger)';
-          msg.style.display = 'block';
-        }
-        if (inpNova) inpNova.focus();
-        return;
-      }
-
-      if (novaSenha === '8665') {
-        if (msg) {
-          msg.innerText = 'Este PIN é reservado pelo sistema. Escolha outro.';
+          msg.innerText = erroComplex;
           msg.style.color = 'var(--danger)';
           msg.style.display = 'block';
         }
@@ -3171,48 +3187,63 @@
       const input = document.getElementById('inputPinGerencial');
       const erro = document.getElementById('erroPinModal');
       const pin = input ? input.value.trim() : '';
-      
-      const roseProf = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === 'rose');
-      const pinRose = roseProf ? String(roseProf.pin || '').trim() : '';
 
-      // 1. PIN Gerencial / Master / Rose
-      if (pin === '8665' || (pinRose && pin === pinRose)) {
-        fecharModalPin();
-        appState.profissionalLogada = null;
-        ativarModoGerencial(true);
-        mostrarAlerta('&#9989; Acesso Gerencial ativado!', true);
+      if (!pin) {
+        if (erro) {
+          erro.innerText = 'Por favor, digite o PIN.';
+          erro.style.display = 'block';
+        }
+        if (input) input.focus();
         return;
       }
 
-      // 2. PIN Individual de Profissional (estritamente dinâmico)
-      const profEncontrada = (appState.profissionais || []).find(p => {
-        const pinValido = String(p.pin || '').trim();
-        return pinValido && (pinValido === pin);
-      });
-
-      if (profEncontrada) {
-        fecharModalPin();
-        appState.modoGerencial = false;
-        appState.profissionalLogada = profEncontrada.nome;
-        try {
-          const eraPermanente = !!(localStorage.getItem(CHAVE_STORAGE_AUTH));
-          salvarSessao('profissional', profEncontrada.nome, eraPermanente);
-        } catch (e) {}
-        atualizarVisualModo();
-        mudarAba('extrato');
-        mostrarAlerta('&#128100; Olá, ' + profEncontrada.nome + '! Exibindo suas comissões.', true);
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        if (erro) {
+          erro.innerText = 'Servidor indisponível no momento.';
+          erro.style.display = 'block';
+        }
         return;
       }
 
-      // 3. PIN incorreto
-      if (erro) {
-        erro.innerText = 'PIN não reconhecido! Tente novamente.';
-        erro.style.display = 'block';
-      }
-      if (input) {
-        input.value = '';
-        input.focus();
-      }
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.status === 'sucesso' && res.autenticado) {
+            fecharModalPin();
+            appState.pinAutenticado = pin;
+            if (res.modoGerencial) {
+              appState.profissionalLogada = null;
+              ativarModoGerencial(true);
+              mostrarAlerta(res.mensagem || '&#9989; Acesso Gerencial ativado!', true);
+            } else {
+              appState.modoGerencial = false;
+              appState.profissionalLogada = res.profissional;
+              try {
+                const eraPermanente = !!(localStorage.getItem(CHAVE_STORAGE_AUTH));
+                salvarSessao('profissional', res.profissional, eraPermanente);
+              } catch (e) {}
+              atualizarVisualModo();
+              mudarAba('extrato');
+              mostrarAlerta(res.mensagem || ('&#128100; Olá, ' + res.profissional + '! Exibindo suas comissões.'), true);
+            }
+          } else {
+            if (erro) {
+              erro.innerText = (res && res.mensagem) ? res.mensagem : 'PIN não reconhecido! Tente novamente.';
+              erro.style.display = 'block';
+            }
+            if (input) {
+              input.value = '';
+              input.focus();
+            }
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (erro) {
+            erro.innerText = err && err.message ? err.message : 'Falha na verificação de acesso.';
+            erro.style.display = 'block';
+          }
+          if (input) input.focus();
+        })
+        .autenticarUsuario('AUTO', pin);
     }
 
     function popularSelectLoginProf() {
@@ -3299,34 +3330,56 @@
         }
         return;
       }
-
-      const profObj = (appState.profissionais || []).find(p => p.nome && p.nome.toLowerCase() === nomeProf.toLowerCase());
-      const pinEsperado = (profObj && profObj.pin) ? String(profObj.pin).trim() : '';
-
-      if (pinDigitado === '8665' || (nomeProf.toLowerCase() === 'rose' && pinEsperado && pinDigitado === pinEsperado)) {
-        if (erro) erro.style.display = 'none';
-        if (inp) inp.value = '';
-        ativarModoGerencial(true);
-        mostrarAlerta('&#9989; Acesso Gerencial ativado com sucesso!', true);
+      if (!pinDigitado) {
+        if (erro) {
+          erro.innerText = 'Digite a senha da profissional.';
+          erro.style.display = 'block';
+        }
+        if (inp) inp.focus();
         return;
       }
 
-      if (pinDigitado === pinEsperado) {
-        if (erro) erro.style.display = 'none';
-        if (inp) inp.value = '';
-        appState.profissionalLogada = nomeProf;
-        aplicarModoExtrato();
-        mostrarAlerta('&#128100; Olá, ' + nomeProf + '! Exibindo suas comissões.', true);
-      } else {
+      if (typeof google === 'undefined' || !google.script || !google.script.run) {
         if (erro) {
-          erro.innerText = 'PIN incorreto para ' + nomeProf + '! Tente novamente.';
+          erro.innerText = 'Servidor indisponível no momento.';
           erro.style.display = 'block';
         }
-        if (inp) {
-          inp.value = '';
-          inp.focus();
-        }
+        return;
       }
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.status === 'sucesso' && res.autenticado) {
+            if (erro) erro.style.display = 'none';
+            if (inp) inp.value = '';
+            appState.pinAutenticado = pinDigitado;
+            if (res.modoGerencial) {
+              ativarModoGerencial(true);
+              mostrarAlerta(res.mensagem || '&#9989; Acesso Gerencial ativado com sucesso!', true);
+            } else {
+              appState.profissionalLogada = res.profissional || nomeProf;
+              aplicarModoExtrato();
+              mostrarAlerta(res.mensagem || ('&#128100; Olá, ' + (res.profissional || nomeProf) + '! Exibindo suas comissões.'), true);
+            }
+          } else {
+            if (erro) {
+              erro.innerText = (res && res.mensagem) ? res.mensagem : 'PIN incorreto para ' + nomeProf + '! Tente novamente.';
+              erro.style.display = 'block';
+            }
+            if (inp) {
+              inp.value = '';
+              inp.focus();
+            }
+          }
+        })
+        .withFailureHandler(function(err) {
+          if (erro) {
+            erro.innerText = err && err.message ? err.message : 'Falha na verificação de acesso.';
+            erro.style.display = 'block';
+          }
+          if (inp) inp.focus();
+        })
+        .autenticarUsuario(nomeProf, pinDigitado);
     }
 
     function sairExtratoProfissional() {
